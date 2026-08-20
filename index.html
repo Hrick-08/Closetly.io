@@ -64,10 +64,18 @@
               </button>
             </div>
 
-            <button class="profile-button" type="button" aria-label="Profile">
-              <div class="avatar">H</div>
-              <i class="bi bi-chevron-down"></i>
-            </button>
+            <div class="profile-dropdown-wrap">
+              <button class="profile-button" type="button" aria-label="Profile" id="profileToggle">
+                <div class="avatar" id="navAvatar">H</div>
+                <i class="bi bi-chevron-down"></i>
+              </button>
+              <div class="profile-dropdown" id="profileDropdown">
+                <a href="pages/myprofile.html" class="dropdown-item" id="ddProfile"><i class="bi bi-person"></i> My Profile</a>
+                <a href="#settings" class="dropdown-item" data-page="settings" id="ddSettings"><i class="bi bi-gear"></i> Settings</a>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item dd-logout" id="ddLogout"><i class="bi bi-box-arrow-right"></i> Logout</button>
+              </div>
+            </div>
           </div>
         </div>
       </nav>
@@ -305,7 +313,7 @@
         <p class="eyebrow">PREFERENCES</p>
         <h1>Settings</h1>
         <p>Manage your profile, AI stylist preferences, account, and application settings.</p>
-        <button class="btn-primary-custom">
+        <button class="btn-primary-custom" id="editProfileBtn">
           <i class="bi bi-person"></i>
           Edit Profile
         </button>
@@ -317,9 +325,23 @@
       <span>Your style. Your wardrobe. Your way.</span>
     </footer>
 
+    <!-- Auth Gate — shown when not logged in -->
+    <div class="auth-gate" id="authGate" style="display:none;">
+      <div class="auth-gate-card">
+        <i class="bi bi-person-standing-dress"></i>
+        <h2>Welcome to Closetly</h2>
+        <p>Log in or create an account to build your digital wardrobe and get AI-powered style recommendations.</p>
+        <div class="auth-gate-actions">
+          <a href="pages/login.html" class="btn-primary-custom"><i class="bi bi-box-arrow-in-right"></i> Log In</a>
+          <a href="pages/signup.html" class="btn-outline-custom"><i class="bi bi-person-plus"></i> Sign Up</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script/auth.js"></script>
   <script src="script/index.js"></script>
 </body>
 </html>

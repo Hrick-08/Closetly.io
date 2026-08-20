@@ -1,0 +1,258 @@
+/* ============================================================
+   auth.css — Login & Sign-Up pages
+   Matches existing Closetly design language.
+   ============================================================ */
+
+/* ---------- page shell ---------- */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(154,96,55,.08), transparent 30%),
+    var(--cream);
+}
+
+/* ---------- card ---------- */
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 48px 40px 44px;
+  box-shadow: 0 20px 60px rgba(40,25,15,.06);
+}
+
+/* ---------- brand header ---------- */
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 36px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.auth-brand-icon {
+  color: var(--brown);
+  font-size: 26px;
+}
+
+.auth-brand-name {
+  font-family: "Playfair Display", serif;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ---------- heading ---------- */
+
+.auth-heading {
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.auth-sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 30px;
+  line-height: 1.6;
+}
+
+/* ---------- form ---------- */
+
+.auth-form .form-group {
+  margin-bottom: 20px;
+}
+
+.auth-form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 7px;
+}
+
+.auth-form .input-wrap {
+  position: relative;
+}
+
+.auth-form .input-wrap i.field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.auth-form input[type="tel"] {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px 0 42px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fafaf8;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.auth-form input:focus {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 3px rgba(154,96,55,.12);
+}
+
+.auth-form input.has-error {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192,57,43,.08);
+}
+
+/* ---------- validation ---------- */
+
+.auth-error-msg {
+  display: none;
+  color: #c0392b;
+  font-size: 12px;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+.auth-error-msg.visible {
+  display: block;
+}
+
+/* global form error banner */
+.auth-form-error {
+  display: none;
+  background: #fdf2f2;
+  border: 1px solid #f5c6c6;
+  border-radius: 9px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  color: #c0392b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-form-error.visible {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.auth-form-error i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* ---------- submit button ---------- */
+
+.auth-submit {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 9px;
+  background: var(--brown);
+  color: white;
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+  margin-top: 4px;
+}
+
+.auth-submit:hover {
+  background: var(--brown-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 9px 25px rgba(112,64,31,.18);
+}
+
+.auth-submit:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------- divider / links ---------- */
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+  color: #bbb;
+  font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.auth-footer a,
+.auth-link {
+  color: var(--brown);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.auth-footer a:hover,
+.auth-link:hover {
+  color: var(--brown-dark);
+  text-decoration: underline;
+}
+
+/* ---------- forgot password placeholder ---------- */
+
+.forgot-link {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  color: var(--brown);
+  text-decoration: underline;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 575px) {
+  .auth-card {
+    padding: 36px 24px 32px;
+    border-radius: 14px;
+  }
+
+  .auth-heading {
+    font-size: 24px;
+  }
+}

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — Closetly</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+
+  <link rel="stylesheet" href="../style/style.css" />
+  <link rel="stylesheet" href="../style/myprofile.css" />
+</head>
+
+<body>
+  <div class="myprofile-page">
+
+    <!-- Top bar -->
+    <div class="myprofile-topbar">
+      <a href="../index.html" class="myprofile-topbar-brand">
+        <i class="bi bi-arrow-left"></i>
+        <i class="bi bi-person-standing-dress"></i>
+        <span>Closetly</span>
+      </a>
+    </div>
+
+    <!-- Hero -->
+    <div class="myprofile-hero">
+      <h1>My <span>Profile</span></h1>
+      <p>Your style preferences used by the AI stylist for personalized recommendations.</p>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="myprofile-header-card">
+      <div class="myprofile-header-inner">
+        <div class="myprofile-photo" id="mpPhoto">
+          <i class="bi bi-person mp-placeholder" id="mpPhotoPlaceholder"></i>
+          <img id="mpPhotoImg" src="" alt="Profile" style="display:none;" />
+        </div>
+        <div class="myprofile-header-info">
+          <h2 id="mpName">—</h2>
+          <p class="mp-email" id="mpEmail">—</p>
+          <p class="mp-member" id="mpMember">Member since —</p>
+          <a href="profile.html?mode=edit&return=myprofile.html" class="myprofile-edit-btn" id="mpEditBtn">
+            <i class="bi bi-pencil"></i> Edit Profile
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Cards -->
+    <div class="myprofile-sections">
+
+      <!-- Basic Info -->
+      <div class="myprofile-card">
+        <div class="myprofile-card-header">
+          <div class="myprofile-card-icon icon-brown-sm"><i class="bi bi-person"></i></div>
+          <h3>Basic Information</h3>
+        </div>
+        <div class="mp-detail-grid">
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Date of Birth</span>
+            <span class="mp-detail-value" id="mpDob">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Gender</span>
+            <span class="mp-detail-value" id="mpGender">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="myprofile-card">
+        <div class="myprofile-card-header">
+          <div class="myprofile-card-icon icon-green-sm"><i class="bi bi-geo-alt"></i></div>
+          <h3>Location</h3>
+        </div>
+        <div class="mp-detail-grid">
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Country</span>
+            <span class="mp-detail-value" id="mpCountry">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">State</span>
+            <span class="mp-detail-value" id="mpState">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">City</span>
+            <span class="mp-detail-value" id="mpCity">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Address</span>
+            <span class="mp-detail-value" id="mpAddress">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body & Fit -->
+      <div class="myprofile-card">
+        <div class="myprofile-card-header">
+          <div class="myprofile-card-icon icon-purple-sm"><i class="bi bi-rulers"></i></div>
+          <h3>Body & Fit Preferences</h3>
+        </div>
+        <div class="mp-detail-grid">
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Height</span>
+            <span class="mp-detail-value" id="mpHeight">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Weight</span>
+            <span class="mp-detail-value" id="mpWeight">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Clothing Size</span>
+            <span class="mp-detail-value" id="mpSize">—</span>
+          </div>
+          <div class="mp-detail-item">
+            <span class="mp-detail-label">Shoe Size</span>
+            <span class="mp-detail-value" id="mpShoe">—</span>
+          </div>
+          <div class="mp-detail-item full-width">
+            <span class="mp-detail-label">Fit Preference</span>
+            <span class="mp-detail-value" id="mpFit">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Style Preferences -->
+      <div class="myprofile-card">
+        <div class="myprofile-card-header">
+          <div class="myprofile-card-icon icon-blue-sm"><i class="bi bi-stars"></i></div>
+          <h3>Style Preferences</h3>
+        </div>
+        <div class="mp-detail-item full-width">
+          <span class="mp-detail-label">Preferred Styles</span>
+          <div class="mp-chip-list" id="mpStyles"></div>
+        </div>
+      </div>
+
+      <!-- Favorite Colors -->
+      <div class="myprofile-card">
+        <div class="myprofile-card-header">
+          <div class="myprofile-card-icon icon-rose-sm"><i class="bi bi-palette"></i></div>
+          <h3>Favorite Colors</h3>
+        </div>
+        <div class="mp-detail-item full-width">
+          <span class="mp-detail-label">Colors</span>
+          <div class="mp-color-list" id="mpColors"></div>
+        </div>
+      </div>
+
+      <!-- Clothing Preferences -->
+      <div class="myprofile-card">
+        <div class="myprofile-card-header">
+          <div class="myprofile-card-icon icon-brown-sm"><i class="bi bi-handbag"></i></div>
+          <h3>Clothing Preferences</h3>
+        </div>
+        <div class="mp-detail-grid">
+          <div class="mp-detail-item full-width">
+            <span class="mp-detail-label">Preferred Categories</span>
+            <div class="mp-chip-list" id="mpCategories"></div>
+          </div>
+          <div class="mp-detail-item full-width">
+            <span class="mp-detail-label">Preferred Occasions</span>
+            <div class="mp-chip-list" id="mpOccasions"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="../script/auth.js"></script>
+  <script>
+    /* ---- Auth guard ---- */
+    if (typeof Auth === "undefined" || !Auth.isLoggedIn()) {
+      window.location.href = "login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const profile = Auth.getProfile();
+      const account = Auth.getAccount();
+
+      /* If no profile completed, send to setup */
+      if (!profile || !profile.name) {
+        window.location.href = "profile.html?mode=setup";
+        return;
+      }
+
+      /* Helper to set text */
+      const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (val && val.trim()) {
+          el.textContent = val;
+        } else {
+          el.textContent = "—";
+          el.classList.add("empty");
+        }
+      };
+
+      /* Gender display map */
+      const genderMap = {
+        "female": "Female",
+        "male": "Male",
+        "non-binary": "Non-binary",
+        "prefer-not": "Prefer not to say"
+      };
+
+      /* Color display data */
+      const colorHexMap = {
+        "black": "#1a1a1a",
+        "white": "#f5f5f5",
+        "beige": "#d6c8a8",
+        "brown": "#8b5e3c",
+        "blue": "#4a7fb5",
+        "green": "#5a8a5a",
+        "red": "#c0392b",
+        "pink": "#e091a3",
+        "purple": "#7d5ba6",
+        "grey": "#8c8c8c",
+        "yellow": "#d4b94e"
+      };
+
+      /* Fill header */
+      setText("mpName", profile.name);
+      setText("mpEmail", profile.email);
+
+      if (profile.profilePhoto) {
+        const img = document.getElementById("mpPhotoImg");
+        const placeholder = document.getElementById("mpPhotoPlaceholder");
+        img.src = profile.profilePhoto;
+        img.style.display = "block";
+        img.style.transform = `translate(${profile.photoOffsetX || 0}px, ${profile.photoOffsetY || 0}px) scale(1.45)`;
+        placeholder.style.display = "none";
+      }
+
+      if (account && account.createdAt) {
+        const d = new Date(account.createdAt);
+        document.getElementById("mpMember").textContent =
+          "Member since " + d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      }
+
+      /* Fill basic info */
+      setText("mpDob", profile.dateOfBirth);
+      setText("mpGender", genderMap[profile.gender] || profile.gender);
+
+      /* Fill location */
+      setText("mpCountry", profile.country);
+      setText("mpState", profile.state);
+      setText("mpCity", profile.city);
+      setText("mpAddress", profile.address);
+
+      /* Fill body & fit */
+      setText("mpHeight", profile.height);
+      setText("mpWeight", profile.weight);
+      setText("mpSize", profile.clothingSize);
+      setText("mpShoe", profile.shoeSize);
+      setText("mpFit", profile.fitPreference ? profile.fitPreference.charAt(0).toUpperCase() + profile.fitPreference.slice(1) : "");
+
+      /* Fill styles */
+      const stylesEl = document.getElementById("mpStyles");
+      if (profile.preferredStyles && profile.preferredStyles.length) {
+        profile.preferredStyles.forEach(s => {
+          const label = s.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          stylesEl.innerHTML += '<span class="mp-chip"><i class="bi bi-check-lg"></i>' + label + '</span>';
+        });
+      } else {
+        stylesEl.innerHTML = '<span class="mp-detail-value empty">—</span>';
+      }
+
+      /* Fill colors */
+      const colorsEl = document.getElementById("mpColors");
+      if (profile.favoriteColors && profile.favoriteColors.length) {
+        profile.favoriteColors.forEach(c => {
+          const hex = colorHexMap[c] || "#ccc";
+          const label = c.charAt(0).toUpperCase() + c.slice(1);
+          const border = c === "white" ? "border:1px solid #ddd;" : "";
+          colorsEl.innerHTML += '<div class="mp-color-item"><div class="mp-color-dot" style="background:' + hex + ';' + border + '"></div><span class="mp-color-name">' + label + '</span></div>';
+        });
+      } else {
+        colorsEl.innerHTML = '<span class="mp-detail-value empty">—</span>';
+      }
+
+      /* Fill categories */
+      const catEl = document.getElementById("mpCategories");
+      if (profile.preferredCategories && profile.preferredCategories.length) {
+        profile.preferredCategories.forEach(c => {
+          const label = c.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          catEl.innerHTML += '<span class="mp-chip"><i class="bi bi-check-lg"></i>' + label + '</span>';
+        });
+      } else {
+        catEl.innerHTML = '<span class="mp-detail-value empty">—</span>';
+      }
+
+      /* Fill occasions */
+      const occEl = document.getElementById("mpOccasions");
+      if (profile.preferredOccasions && profile.preferredOccasions.length) {
+        profile.preferredOccasions.forEach(o => {
+          const label = o.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+          occEl.innerHTML += '<span class="mp-chip"><i class="bi bi-check-lg"></i>' + label + '</span>';
+        });
+      } else {
+        occEl.innerHTML = '<span class="mp-detail-value empty">—</span>';
+      }
+    });
+  </script>
+</body>
+</html>
