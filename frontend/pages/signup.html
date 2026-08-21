@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — Closetly</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+
+  <link rel="stylesheet" href="../style/style.css" />
+  <link rel="stylesheet" href="../style/auth.css" />
+</head>
+
+<body>
+  <div class="auth-page">
+
+    <div class="auth-card">
+
+      <a href="../index.html" class="auth-brand">
+        <i class="bi bi-person-standing-dress auth-brand-icon"></i>
+        <span class="auth-brand-name">Closetly</span>
+      </a>
+
+      <h1 class="auth-heading">Create Your Account</h1>
+      <p class="auth-sub">Start building your digital wardrobe and let AI elevate your style.</p>
+
+      <div class="auth-form-error" id="signupError">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span id="signupErrorText"></span>
+      </div>
+
+      <form class="auth-form" id="signupForm" novalidate>
+        <div class="form-group">
+          <label for="suName">Full Name</label>
+          <div class="input-wrap">
+            <i class="bi bi-person field-icon"></i>
+            <input type="text" id="suName" placeholder="Jane Doe" autocomplete="name" />
+          </div>
+          <div class="auth-error-msg" id="suNameErr"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="suEmail">Email</label>
+          <div class="input-wrap">
+            <i class="bi bi-envelope field-icon"></i>
+            <input type="email" id="suEmail" placeholder="you@example.com" autocomplete="email" />
+          </div>
+          <div class="auth-error-msg" id="suEmailErr"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="suPhone">Phone <span style="font-weight:400;color:#aaa;">(optional)</span></label>
+          <div class="input-wrap">
+            <i class="bi bi-telephone field-icon"></i>
+            <input type="tel" id="suPhone" placeholder="+91 98765 43210" autocomplete="tel" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="suPassword">Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-lock field-icon"></i>
+            <input type="password" id="suPassword" placeholder="Min. 8 characters" autocomplete="new-password" />
+          </div>
+          <div class="auth-error-msg" id="suPassErr"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="suConfirm">Confirm Password</label>
+          <div class="input-wrap">
+            <i class="bi bi-lock-fill field-icon"></i>
+            <input type="password" id="suConfirm" placeholder="Re-enter your password" autocomplete="new-password" />
+          </div>
+          <div class="auth-error-msg" id="suConfirmErr"></div>
+        </div>
+
+        <button type="submit" class="auth-submit">Create Account</button>
+      </form>
+
+      <div class="auth-divider">or</div>
+
+      <p class="auth-footer">
+        Already have an account? <a href="login.html">Log In</a>
+      </p>
+
+    </div>
+  </div>
+
+  <script src="../script/auth.js"></script>
+  <script>
+    if (Auth.isLoggedIn()) {
+      window.location.href = Auth.isProfileComplete() ? "../index.html" : "profile.html";
+    }
+
+    const form = document.getElementById("signupForm");
+    const errBanner = document.getElementById("signupError");
+    const errText = document.getElementById("signupErrorText");
+
+    function showFieldError(id, msg) {
+      const el = document.getElementById(id);
+      const input = el?.previousElementSibling?.querySelector("input");
+      if (el) { el.textContent = msg; el.classList.add("visible"); }
+      if (input) input.classList.add("has-error");
+    }
+    function clearFieldError(id) {
+      const el = document.getElementById(id);
+      const input = el?.previousElementSibling?.querySelector("input");
+      if (el) { el.textContent = ""; el.classList.remove("visible"); }
+      if (input) input.classList.remove("has-error");
+    }
+    function clearAllErrors() {
+      ["suNameErr","suEmailErr","suPassErr","suConfirmErr"].forEach(clearFieldError);
+      errBanner.classList.remove("visible");
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearAllErrors();
+
+      const name = document.getElementById("suName").value.trim();
+      const email = document.getElementById("suEmail").value.trim();
+      const phone = document.getElementById("suPhone").value.trim();
+      const password = document.getElementById("suPassword").value;
+      const confirm = document.getElementById("suConfirm").value;
+      let valid = true;
+
+      if (!name) {
+        showFieldError("suNameErr", "Full name cannot be empty.");
+        valid = false;
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showFieldError("suEmailErr", "Please enter a valid email address.");
+        valid = false;
+      }
+      if (!password || password.length < 8) {
+        showFieldError("suPassErr", "Password must be at least 8 characters.");
+        valid = false;
+      }
+      if (password !== confirm) {
+        showFieldError("suConfirmErr", "Passwords do not match.");
+        valid = false;
+      }
+      if (!valid) return;
+
+      const btn = form.querySelector(".auth-submit");
+      btn.disabled = true;
+      btn.textContent = "Creating account...";
+
+      try {
+        await Auth.signUp({ name, email, password, phone });
+        window.location.href = "profile.html";
+      } catch (err) {
+        errText.textContent = err.message;
+        errBanner.classList.add("visible");
+        btn.disabled = false;
+        btn.textContent = "Create Account";
+      }
+    });
+  </script>
+</body>
+</html>

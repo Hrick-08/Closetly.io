@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Profile — Closetly</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+
+  <link rel="stylesheet" href="../style/style.css" />
+  <link rel="stylesheet" href="../style/profile.css" />
+</head>
+
+<body>
+  <div class="profile-page" id="profilePage">
+
+    <!-- Top bar -->
+    <div class="profile-topbar">
+      <a href="../index.html" class="profile-topbar-brand">
+        <i class="bi bi-person-standing-dress"></i>
+        <span>Closetly</span>
+      </a>
+      <div class="profile-topbar-right">
+        <button class="profile-topbar-skip" id="skipBtn" style="display:none;">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="profile-hero">
+      <h1>Tell Us About <span>Your Style</span></h1>
+      <p>Help your AI stylist understand you better and personalize your wardrobe experience.</p>
+    </div>
+
+    <!-- Progress -->
+    <div class="profile-progress">
+      <div class="progress-steps">
+        <div class="progress-step active" data-step="0">
+          <div class="step-circle">1</div>
+          <div class="step-label">Basic Info</div>
+        </div>
+        <div class="progress-step" data-step="1">
+          <div class="step-circle">2</div>
+          <div class="step-label">Location</div>
+        </div>
+        <div class="progress-step" data-step="2">
+          <div class="step-circle">3</div>
+          <div class="step-label">Body & Fit</div>
+        </div>
+        <div class="progress-step" data-step="3">
+          <div class="step-circle">4</div>
+          <div class="step-label">Style</div>
+        </div>
+        <div class="progress-step" data-step="4">
+          <div class="step-circle">5</div>
+          <div class="step-label">Done</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= STEP 0: Basic Information ================= -->
+    <div class="profile-sections">
+      <section class="profile-section active" data-section="0">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-icon icon-brown-sm"><i class="bi bi-person"></i></div>
+            <div>
+              <h2>Basic Information</h2>
+              <p>Tell us who you are.</p>
+            </div>
+          </div>
+
+          <!-- Photo -->
+          <div class="profile-field full-width" style="margin-bottom:24px;">
+            <label>Profile Photo</label>
+            <div class="photo-upload">
+              <div class="photo-preview" id="photoPreview">
+                <i class="bi bi-person photo-placeholder" id="photoPlaceholder"></i>
+                <img id="photoImg" src="" alt="Profile" style="display:none;" />
+              </div>
+              <div class="photo-actions">
+                <button class="photo-upload-btn" type="button" onclick="document.getElementById('photoInput').click()">
+                  <i class="bi bi-camera"></i> Upload Photo
+                </button>
+                <button class="photo-reposition-btn" type="button" id="photoRepositionBtn" style="display:none;">
+                  <i class="bi bi-arrows-move"></i> Reposition
+                </button>
+                <button class="photo-remove-btn" type="button" id="photoRemoveBtn" style="display:none;">
+                  <i class="bi bi-trash"></i> Remove
+                </button>
+              </div>
+              <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-field">
+              <label for="pName">Full Name</label>
+              <input type="text" id="pName" placeholder="Jane Doe" />
+            </div>
+            <div class="profile-field">
+              <label for="pEmail">Email</label>
+              <input type="email" id="pEmail" placeholder="you@example.com" readonly style="background:#f0ece5;cursor:not-allowed;" />
+            </div>
+          </div>
+
+          <div class="profile-row" style="margin-top:18px;">
+            <div class="profile-field">
+              <label for="pDob">Date of Birth</label>
+              <input type="date" id="pDob" />
+            </div>
+            <div class="profile-field">
+              <label for="pGender">Gender</label>
+              <select id="pGender">
+                <option value="">Select</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="prefer-not">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <div></div>
+          <button class="btn-next" data-next="1">Next <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </section>
+
+      <!-- ================= STEP 1: Location ================= -->
+      <section class="profile-section" data-section="1">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-icon icon-green-sm"><i class="bi bi-geo-alt"></i></div>
+            <div>
+              <h2>Location</h2>
+              <p>Help us tailor recommendations to your region.</p>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-field">
+              <label for="pCountry">Country</label>
+              <select id="pCountry">
+                <option value="">Select Country</option>
+              </select>
+            </div>
+            <div class="profile-field">
+              <label for="pState">State / Province</label>
+              <select id="pState" disabled>
+                <option value="">Select State</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="profile-row" style="margin-top:18px;">
+            <div class="profile-field">
+              <label for="pCity">City</label>
+              <select id="pCity" disabled>
+                <option value="">Select City</option>
+              </select>
+              <input type="text" id="pCityCustom" placeholder="Type your city" style="display:none;" />
+            </div>
+            <div class="profile-field">
+              <label for="pAddress">Address <span class="optional">(optional)</span></label>
+              <input type="text" id="pAddress" placeholder="Street address" />
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn-back" data-prev="0"><i class="bi bi-arrow-left"></i> Back</button>
+          <button class="btn-next" data-next="2">Next <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </section>
+
+      <!-- ================= STEP 2: Body / Fit ================= -->
+      <section class="profile-section" data-section="2">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-icon icon-purple-sm"><i class="bi bi-rulers"></i></div>
+            <div>
+              <h2>Body & Fit Preferences</h2>
+              <p>These help the AI stylist recommend the right fits.</p>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-field">
+              <label for="pHeight">Height</label>
+              <input type="text" id="pHeight" placeholder="e.g. 5'8&quot; or 173 cm" />
+            </div>
+            <div class="profile-field">
+              <label for="pWeight">Weight <span class="optional">(optional)</span></label>
+              <input type="text" id="pWeight" placeholder="e.g. 70 kg" />
+            </div>
+          </div>
+
+          <div class="profile-row" style="margin-top:18px;">
+            <div class="profile-field">
+              <label for="pSize">Preferred Clothing Size</label>
+              <select id="pSize">
+                <option value="">Select</option>
+                <option>XS</option><option>S</option><option>M</option>
+                <option>L</option><option>XL</option><option>XXL</option>
+                <option>3XL</option><option>4XL</option>
+              </select>
+            </div>
+            <div class="profile-field">
+              <label for="pShoe">Shoe Size</label>
+              <input type="text" id="pShoe" placeholder="e.g. US 9 / EU 42" />
+            </div>
+          </div>
+
+          <div class="profile-field full-width" style="margin-top:18px;">
+            <label>Fit Preference</label>
+            <div class="chip-grid" id="fitChips">
+              <button class="chip" data-value="slim">Slim</button>
+              <button class="chip" data-value="regular">Regular</button>
+              <button class="chip" data-value="relaxed">Relaxed</button>
+              <button class="chip" data-value="oversized">Oversized</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn-back" data-prev="1"><i class="bi bi-arrow-left"></i> Back</button>
+          <button class="btn-next" data-next="3">Next <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </section>
+
+      <!-- ================= STEP 3: Style Preferences ================= -->
+      <section class="profile-section" data-section="3">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-icon icon-blue-sm"><i class="bi bi-stars"></i></div>
+            <div>
+              <h2>Style Preferences</h2>
+              <p>Pick the styles that match your vibe.</p>
+            </div>
+          </div>
+
+          <div class="profile-field full-width" style="margin-bottom:28px;">
+            <label>Preferred Styles</label>
+            <div class="chip-grid" id="styleChips">
+              <button class="chip" data-value="casual"><i class="bi bi-check-lg"></i>Casual</button>
+              <button class="chip" data-value="formal"><i class="bi bi-check-lg"></i>Formal</button>
+              <button class="chip" data-value="streetwear"><i class="bi bi-check-lg"></i>Streetwear</button>
+              <button class="chip" data-value="minimal"><i class="bi bi-check-lg"></i>Minimal</button>
+              <button class="chip" data-value="vintage"><i class="bi bi-check-lg"></i>Vintage</button>
+              <button class="chip" data-value="sporty"><i class="bi bi-check-lg"></i>Sporty</button>
+              <button class="chip" data-value="ethnic"><i class="bi bi-check-lg"></i>Ethnic</button>
+              <button class="chip" data-value="smart-casual"><i class="bi bi-check-lg"></i>Smart Casual</button>
+              <button class="chip" data-value="y2k"><i class="bi bi-check-lg"></i>Y2K</button>
+              <button class="chip" data-value="luxury"><i class="bi bi-check-lg"></i>Luxury</button>
+              <button class="chip" data-value="bohemian"><i class="bi bi-check-lg"></i>Bohemian</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-icon icon-rose-sm"><i class="bi bi-palette"></i></div>
+            <div>
+              <h2>Favorite Colors</h2>
+              <p>Choose the colors you love wearing.</p>
+            </div>
+          </div>
+
+          <div class="profile-field full-width">
+            <label>Colors</label>
+            <div class="color-grid" id="colorGrid">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-icon icon-brown-sm"><i class="bi bi-handbag"></i></div>
+            <div>
+              <h2>Clothing Preferences</h2>
+              <p>What do you usually reach for?</p>
+            </div>
+          </div>
+
+          <div class="profile-field full-width" style="margin-bottom:28px;">
+            <label>Preferred Categories</label>
+            <div class="chip-grid" id="categoryChips">
+              <button class="chip" data-value="shirts"><i class="bi bi-check-lg"></i>Shirts</button>
+              <button class="chip" data-value="t-shirts"><i class="bi bi-check-lg"></i>T-Shirts</button>
+              <button class="chip" data-value="jeans"><i class="bi bi-check-lg"></i>Jeans</button>
+              <button class="chip" data-value="trousers"><i class="bi bi-check-lg"></i>Trousers</button>
+              <button class="chip" data-value="dresses"><i class="bi bi-check-lg"></i>Dresses</button>
+              <button class="chip" data-value="skirts"><i class="bi bi-check-lg"></i>Skirts</button>
+              <button class="chip" data-value="jackets"><i class="bi bi-check-lg"></i>Jackets</button>
+              <button class="chip" data-value="hoodies"><i class="bi bi-check-lg"></i>Hoodies</button>
+              <button class="chip" data-value="ethnic-wear"><i class="bi bi-check-lg"></i>Ethnic Wear</button>
+              <button class="chip" data-value="shoes"><i class="bi bi-check-lg"></i>Shoes</button>
+              <button class="chip" data-value="accessories"><i class="bi bi-check-lg"></i>Accessories</button>
+            </div>
+          </div>
+
+          <div class="profile-field full-width">
+            <label>Preferred Occasions</label>
+            <div class="chip-grid" id="occasionChips">
+              <button class="chip" data-value="daily"><i class="bi bi-check-lg"></i>Daily Wear</button>
+              <button class="chip" data-value="college"><i class="bi bi-check-lg"></i>College</button>
+              <button class="chip" data-value="office"><i class="bi bi-check-lg"></i>Office</button>
+              <button class="chip" data-value="party"><i class="bi bi-check-lg"></i>Party</button>
+              <button class="chip" data-value="wedding"><i class="bi bi-check-lg"></i>Wedding</button>
+              <button class="chip" data-value="date"><i class="bi bi-check-lg"></i>Date</button>
+              <button class="chip" data-value="travel"><i class="bi bi-check-lg"></i>Travel</button>
+              <button class="chip" data-value="sports"><i class="bi bi-check-lg"></i>Sports</button>
+              <button class="chip" data-value="formal-events"><i class="bi bi-check-lg"></i>Formal Events</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn-back" data-prev="2"><i class="bi bi-arrow-left"></i> Back</button>
+          <button class="btn-save" id="saveProfileBtn"><i class="bi bi-check-lg"></i> Save Profile</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Photo Reposition Modal -->
+    <div class="reposition-overlay" id="repositionOverlay">
+      <div class="reposition-modal">
+        <div class="reposition-header">
+          <h3>Reposition Photo</h3>
+          <p>Drag the photo to adjust how it appears in the circle</p>
+        </div>
+        <div class="reposition-preview" id="repositionPreview">
+          <img id="repositionImg" src="" alt="Reposition" />
+        </div>
+        <p class="reposition-hint"><i class="bi bi-arrows-move"></i> Click & drag to move the image</p>
+        <div class="reposition-actions">
+          <button class="reposition-cancel" id="repositionCancel">Cancel</button>
+          <button class="reposition-save" id="repositionSave"><i class="bi bi-check-lg"></i> Save Position</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="profile-toast" id="toast">
+      <i class="bi bi-check-circle-fill"></i>
+      <span id="toastMsg">Profile saved successfully!</span>
+    </div>
+
+  </div>
+
+  <script src="../script/auth.js"></script>
+  <script src="../script/locations.js"></script>
+  <script src="../script/profile.js"></script>
+</body>
+</html>

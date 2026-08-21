@@ -697,3 +697,149 @@ footer {
     );
     pointer-events: none;
 }
+
+/* ---------------- PROFILE DROPDOWN ---------------- */
+
+.profile-dropdown-wrap {
+  position: relative;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 190px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(35,27,18,.1);
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: all .2s ease;
+  z-index: 1100;
+}
+
+.profile-dropdown-wrap.open .profile-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.profile-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  font-size: 14px;
+  color: #444;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: "DM Sans", sans-serif;
+  transition: background .15s ease;
+}
+
+.profile-dropdown .dropdown-item:hover {
+  background: var(--cream);
+  color: var(--brown-dark);
+}
+
+.profile-dropdown .dropdown-item i {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.profile-dropdown .dd-logout {
+  color: #c0392b;
+}
+
+.profile-dropdown .dd-logout i {
+  color: #c0392b;
+}
+
+.profile-dropdown .dd-logout:hover {
+  background: #fdf2f2;
+  color: #c0392b;
+}
+
+.profile-dropdown .dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ---------------- AUTH GATE ---------------- */
+
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  background: rgba(248,246,242,.92);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+}
+
+.auth-gate-card {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 50px 40px;
+  box-shadow: 0 20px 60px rgba(40,25,15,.08);
+}
+
+.auth-gate-card > i {
+  font-size: 48px;
+  color: var(--brown);
+  margin-bottom: 20px;
+}
+
+.auth-gate-card h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.auth-gate-card p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.auth-gate-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.auth-gate-actions .btn-primary-custom,
+.auth-gate-actions .btn-outline-custom {
+  text-decoration: none;
+}
+
+@media (max-width: 575px) {
+  .auth-gate-card {
+    padding: 36px 24px;
+  }
+
+  .auth-gate-actions {
+    flex-direction: column;
+  }
+
+  .auth-gate-actions .btn-primary-custom,
+  .auth-gate-actions .btn-outline-custom {
+    width: 100%;
+  }
+}
