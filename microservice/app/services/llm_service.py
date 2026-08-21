@@ -119,6 +119,7 @@ def classify_image(image_bytes: bytes, media_type: str = "image/jpeg") -> dict:
                 ],
             },
         ],
+        reasoning_effort="none",
         temperature=0.2,
         max_tokens=1024,
     )
@@ -194,8 +195,9 @@ def describe_image(image_bytes: bytes, media_type: str = "image/jpeg") -> str:
                 ],
             },
         ],
+        reasoning_effort="none",
         temperature=0.2,
-        max_tokens=512,
+        max_tokens=1024,
     )
 
     description = response.choices[0].message.content.strip()
