@@ -90,7 +90,7 @@ Node handles auth, CRUD, and orchestration. Python handles all ML work (CLIP inf
 closetly/
 ├── frontend/            # React frontend
 ├── backend/            # Node/Express API
-├── ml-service/        # Python FastAPI ML microservice
+├── microservice/        # Python FastAPI microservice to search for the products and classify the clothes
 └── README.md
 ```
 
@@ -120,9 +120,9 @@ cp .env.example .env   # fill in required values
 npm run dev
 ```
 
-### 3. ML Service (Python)
+### 3. Microservice (Python)
 ```bash
-cd ml-service
+cd microservice
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
@@ -146,7 +146,7 @@ CLOUDINARY_URL=
 ML_SERVICE_URL=http://localhost:8000
 ```
 
-Key variables for `ml-service/.env`:
+Key variables for `microservice/.env`:
 
 ```
 QDRANT_URL=
