@@ -34,7 +34,8 @@ def search_products(query: str, num_results: int = 10) -> list[dict]:
         "num": num_results,
         "api_key": settings.serpapi_key,
         "hl": "en",
-        "gl": "us",
+        "gl": "in",
+        "location": "India",
     }
 
     try:

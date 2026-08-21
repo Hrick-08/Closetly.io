@@ -179,14 +179,15 @@ def describe_image(image_bytes: bytes, media_type: str = "image/jpeg") -> str:
                         "type": "text",
                         "text": (
                             "/no_think\n"
-                            "You are a fashion search assistant. "
+                            "You are a fashion search assistant for Indian shoppers. "
                             "Generate a SHORT, specific search query (max 10-12 words) that someone "
-                            "would type into a shopping site to find this exact clothing item.\n\n"
+                            "would type into an Indian shopping site to find this exact clothing item.\n\n"
                             "Focus on: type of garment, color, pattern, material, style, and gender if obvious.\n"
                             "Example outputs:\n"
                             '  "navy blue slim fit denim trucker jacket men"\n'
                             '  "red floral print maxi dress women"\n'
-                            '  "white leather low-top sneakers unisex"\n\n'
+                            '  "white leather low-top sneakers unisex"\n'
+                            '  "black cotton kurta men"\n\n'
                             "Respond with ONLY the search query text, nothing else."
                         ),
                     },
