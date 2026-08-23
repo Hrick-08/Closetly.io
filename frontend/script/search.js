@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formData = new FormData();
     formData.append("image", selectedFile);
-    formData.append("num_results", "12");
+    formData.append("num_results", "8");
 
     /* Close the modal first so results are visible while loading */
     els.overlay.style.display = "none";
