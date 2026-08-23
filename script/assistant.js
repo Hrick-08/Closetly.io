@@ -14,6 +14,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!aiToggle || !aiChatbox) return;
 
+  // Base URL of the FastAPI microservice. Change this if you deploy it
+  // somewhere other than localhost.
+  const MICROSERVICE_URL = "http://127.0.0.1:8000";
+
+  // Key used to persist the conversation across page navigations.
+  // sessionStorage survives moving between pages in the same tab,
+  // and clears automatically when the tab/browser closes.
+  const STORAGE_KEY = "closetlyChatHistory";
+
+  // Running conversation history sent to /chat for multi-turn context.
+  // Restored from sessionStorage on load so it survives page changes.
+  let chatHistory = loadChatHistory();
+
+
+  /* -----------------------------------------
+     PERSISTENCE
+  ----------------------------------------- */
+
+  function loadChatHistory() {
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error("Failed to load chat history:", error);
+      return [];
+    }
+  }
+
+  function saveChatHistory() {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
+    } catch (error) {
+      console.error("Failed to save chat history:", error);
+    }
+  }
+
+  function restoreChatUI() {
+    chatHistory.forEach(turn => {
+      addMessage(turn.content, turn.role === "user" ? "user" : "bot");
+    });
+  }
+
+  function clearChatHistory() {
+    chatHistory = [];
+    sessionStorage.removeItem(STORAGE_KEY);
+    aiMessages.innerHTML = "";
+  }
+
+  // Exposed so you can wire a "New chat" / clear button to this later,
+  // e.g. <button onclick="window.closetlyClearChat()">.
+  window.closetlyClearChat = clearChatHistory;
+
 
   /* -----------------------------------------
      OPEN / CLOSE CHAT
@@ -42,6 +94,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   aiClose.addEventListener("click", closeAIChat);
+
+  // Repaint any messages from a previous page into the chat window.
+  restoreChatUI();
 
 
   /* -----------------------------------------
@@ -123,55 +178,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function generateAIResponse(userMessage) {
 
-    /*
-      Replace this section later with your API call.
+    const response = await fetch(`${MICROSERVICE_URL}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: userMessage,
+        history: chatHistory
+      })
+    });
 
-      Example:
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: userMessage
-        })
-      });
-
-      const data = await response.json();
-
-      return data.reply;
-    */
-
-    const message = userMessage.toLowerCase();
-
-    if (
-      message.includes("outfit") ||
-      message.includes("wear")
-    ) {
-      return "Tell me the occasion, weather, or style you're going for and I'll build an outfit from your wardrobe.";
+    if (!response.ok) {
+      throw new Error(`Assistant request failed with status ${response.status}`);
     }
 
-    if (
-      message.includes("wardrobe") ||
-      message.includes("closet")
-    ) {
-      return "I can help you combine pieces from your wardrobe. Try asking me for a casual, formal, summer, or winter outfit.";
-    }
+    const data = await response.json();
 
-    if (
-      message.includes("summer")
-    ) {
-      return "For summer, I can put together a lightweight outfit using your available shirts, trousers, and sneakers.";
-    }
+    // Keep the running conversation in sync for the next turn's context.
+    chatHistory.push({ role: "user", content: userMessage });
+    chatHistory.push({ role: "assistant", content: data.response });
+    saveChatHistory();
 
-    if (
-      message.includes("winter")
-    ) {
-      return "For winter, I can layer your jackets, sweaters, shirts, and trousers into a complete look.";
-    }
-
-    return "I can help with outfits, wardrobe combinations, styling advice, shopping suggestions, and finding the right look.";
+    return data.response;
   }
 
 
