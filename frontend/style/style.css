@@ -572,16 +572,120 @@ button {
   line-height: 1.7;
 }
 
-/* ---------------- FOOTER ---------------- */
+/* ---------------- FOOTER (shared, loaded by script/footer.js) ---------------- */
 
-footer {
-  display: flex;
-  justify-content: space-between;
-  padding: 22px 5.5vw;
-  color: #858585;
+.site-footer {
   background: #f5f2ed;
-  font-size: 11px;
   border-top: 1px solid var(--border);
+  padding: 54px 5.5vw 0;
+}
+
+.sf-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.sf-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sf-brand-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.sf-brand-name {
+  font-family: "Playfair Display", serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.sf-desc {
+  margin: 16px 0 0;
+  max-width: 270px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.sf-tagline {
+  margin: 8px 0 0;
+  color: #999;
+  font-size: 11px;
+  letter-spacing: .02em;
+}
+
+.sf-title {
+  font-family: "Playfair Display", serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 4px 0 16px;
+}
+
+.sf-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.sf-links.sf-links-wrap {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+.sf-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: color .18s ease;
+}
+
+.sf-links a:hover,
+.sf-links a:focus-visible {
+  color: var(--brown);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sf-bottom {
+  max-width: 1240px;
+  margin: 44px auto 0;
+  border-top: 1px solid var(--border);
+  padding: 18px 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  flex-wrap: wrap;
+  color: #858585;
+  font-size: 11.5px;
+}
+
+.sf-bottom-links {
+  display: flex;
+  gap: 20px;
+}
+
+@media (max-width: 575px) {
+  .site-footer {
+    padding-top: 40px;
+  }
+
+  .sf-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 }
 
 /* ---------------- RESPONSIVE ---------------- */
@@ -695,11 +799,6 @@ footer {
 
   .outfit-col {
     width: 50%;
-  }
-
-  footer {
-    flex-direction: column;
-    gap: 5px;
   }
 }
 
