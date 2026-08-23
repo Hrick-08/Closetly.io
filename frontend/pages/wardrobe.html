@@ -198,9 +198,66 @@
       </div>
     </div>
 
+    <!-- ================= AI ASSISTANT ================= -->
+      <div class="ai-assistant" id="aiAssistant">
+        <!-- Floating button -->
+        <button class="ai-assistant-button" id="aiAssistantToggle" aria-label="Open AI Assistant">
+          <i class="bi bi-stars"></i>
+        </button>
+
+        <!-- Chat box -->
+        <div class="ai-chatbox" id="aiChatbox">
+          <div class="ai-chat-header">
+            <div class="ai-chat-title">
+              <div class="ai-chat-avatar">
+                <i class="bi bi-stars"></i>
+              </div>
+              <div>
+                <strong>Closetly AI</strong>
+                <small>Your personal stylist</small>
+              </div>
+            </div>
+
+            <button class="ai-chat-close" id="aiChatClose" aria-label="Close chat">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-message ai-message-bot">
+              <div class="ai-message-avatar">
+                <i class="bi bi-stars"></i>
+              </div>
+              <div class="ai-message-content">
+                Hey! I'm your Closetly AI stylist. What are you looking for today?
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-chat-suggestions">
+            <button class="ai-suggestion">Suggest an outfit</button>
+            <button class="ai-suggestion">What should I wear?</button>
+            <button class="ai-suggestion">Style my wardrobe</button>
+          </div>
+
+          <form class="ai-chat-input-area" id="aiChatForm">
+            <input
+              type="text"
+              id="aiChatInput"
+              placeholder="Ask your stylist..."
+              autocomplete="off"
+            />
+            <button type="submit" aria-label="Send message">
+              <i class="bi bi-arrow-up"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
   </div>
 
   <script src="../script/auth.js"></script>
   <script src="../script/wardrobe.js"></script>
+  <script src="../script/assistant.js"></script>
 </body>
 </html>
