@@ -771,5 +771,11 @@ document.addEventListener("DOMContentLoaded", () => {
   els.filter.innerHTML = '<option value="">All Categories</option>';
   Object.keys(TAXONOMY).forEach((cat) => els.filter.add(new Option(cat, cat)));
 
+  /* Preselect category when arriving via a deep link (?category=...) */
+  const urlCategory = new URLSearchParams(window.location.search).get("category");
+  if (urlCategory && Object.prototype.hasOwnProperty.call(TAXONOMY, urlCategory)) {
+    els.filter.value = urlCategory;
+  }
+
   render();
 });
