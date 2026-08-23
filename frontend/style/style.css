@@ -59,7 +59,7 @@ button {
 }
 
 .closetly-nav {
-  min-height: 97px;
+  min-height: 78px;
 }
 
 .brand {
@@ -103,7 +103,7 @@ button {
   display: flex;
   align-items: stretch;
   gap: 8px;
-  height: 97px;
+  height: 78px;
 }
 
 .nav-item {
