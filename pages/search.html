@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search — Closetly</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+
+  <link rel="stylesheet" href="../style/style.css" />
+  <link rel="stylesheet" href="../style/profile.css" />
+  <link rel="stylesheet" href="../style/search.css" />
+</head>
+
+<body>
+  <div class="search-standalone">
+
+    <!-- Top bar -->
+    <div class="profile-topbar">
+      <a href="../index.html" class="profile-topbar-brand">
+        <i class="bi bi-arrow-left"></i>
+        <i class="bi bi-person-standing-dress"></i>
+        <span>Closetly</span>
+      </a>
+      <div class="profile-topbar-right">
+        <nav class="search-topnav">
+          <a href="../index.html">Home</a>
+          <a href="search.html" class="active">Search</a>
+          <a href="../index.html">Wardrobe</a>
+          <a href="../index.html">Settings</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- ================= SEARCH ================= -->
+    <main id="search" class="page search-page active-page">
+      <div class="search-container">
+
+        <header class="search-header">
+          <p class="eyebrow">FIND YOUR LOOK</p>
+          <h1>Search <span>by Image</span></h1>
+          <p class="search-subtitle">
+            Upload a photo of any clothing item — our AI identifies it and
+            finds similar products you can buy.
+          </p>
+        </header>
+
+        <!-- Image upload -->
+        <div class="upload-card">
+          <i class="bi bi-image"></i>
+          <p>
+            Have an inspiration photo or a screenshot of an outfit?<br />
+            Closetly will find matching products online.
+          </p>
+          <button type="button" class="btn-primary-custom" id="openVisualSearchBtn">
+            <i class="bi bi-cloud-arrow-up"></i>
+            Search by Image
+          </button>
+          <!-- <p class="service-status" id="mlStatus">
+            <span class="status-dot status-checking" id="mlStatusDot"></span>
+            <span id="mlStatusText">Checking AI service…</span>
+          </p> -->
+        </div>
+
+        <!-- Alerts -->
+        <div class="search-alert" id="searchAlert" hidden></div>
+
+        <!-- Results -->
+        <div class="results-meta" id="resultsMeta" hidden></div>
+        <div class="row g-3 product-grid" id="resultsGrid"></div>
+
+        <!-- Initial / empty state -->
+        <div class="search-empty" id="searchEmpty">
+          <div class="search-empty-icon"><i class="bi bi-handbag"></i></div>
+          <h2>Start exploring</h2>
+          <p>
+            Upload an image of a hoodie, saree, sneakers, kurta — anything —
+            and we'll find similar products to shop.
+          </p>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ================= VISUAL SEARCH MODAL ================= -->
+    <div class="vs-overlay" id="vsOverlay" style="display:none;">
+      <div class="vs-modal" role="dialog" aria-label="Search by image">
+        <div class="vs-modal-header">
+          <h3><i class="bi bi-image"></i> Search by Image</h3>
+          <button type="button" class="vs-close" id="vsCloseBtn" aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <p class="vs-hint">
+          Upload a photo of a clothing item — Closetly's AI will identify it
+          and find similar products to shop.
+        </p>
+
+        <div class="vs-dropzone" id="vsDropzone">
+          <i class="bi bi-cloud-arrow-up"></i>
+          <strong>Drag &amp; drop your image here</strong>
+          <span>or click to browse — JPG, PNG, WEBP (max 8 MB)</span>
+          <input type="file" id="vsFileInput" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+        </div>
+
+        <div class="vs-preview" id="vsPreview" style="display:none;">
+          <img id="vsPreviewImg" alt="Selected clothing item preview" />
+          <div class="vs-preview-info">
+            <strong id="vsFileName"></strong>
+            <span id="vsFileSize"></span>
+          </div>
+        </div>
+
+        <p class="vs-error" id="vsError" hidden></p>
+
+        <div class="vs-actions">
+          <button type="button" class="btn-outline-custom" id="vsChangeBtn" style="display:none;">
+            <i class="bi bi-arrow-repeat"></i> Change Image
+          </button>
+          <button type="button" class="btn-outline-custom vs-remove-btn" id="vsRemoveBtn" style="display:none;">
+            <i class="bi bi-trash"></i> Remove
+          </button>
+          <button type="button" class="btn-primary-custom" id="vsSearchBtn" disabled>
+            <i class="bi bi-stars"></i> Search with this Image
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SEARCH LOADING OVERLAY ================= -->
+    <div class="vs-loading" id="vsLoading" style="display:none;">
+      <div class="vs-loading-card">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+        <p id="vsLoadingText">Analyzing your outfit...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../script/auth.js"></script>
+  <script src="../script/search.js"></script>
+</body>
+</html>
