@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import search, classifiier
+from app.routers import search, classifiier, response
 
 # ── Logging ─────────────────────────────────────────────────────
 logging.basicConfig(
@@ -63,6 +63,7 @@ app.add_middleware(
 # ── Routers ─────────────────────────────────────────────────────
 app.include_router(search.router)
 app.include_router(classifiier.router)
+app.include_router(response.router)
 
 
 # ── Health check ────────────────────────────────────────────────
