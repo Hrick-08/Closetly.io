@@ -149,12 +149,12 @@ document.addEventListener("DOMContentLoaded", () => {
       priceRow.className = "product-price-row";
       const price = document.createElement("span");
       price.className = "product-price";
-      price.textContent = p.price;
+      price.textContent = `₹${p.price}`;
       priceRow.appendChild(price);
       if (p.old_price) {
         const old = document.createElement("span");
         old.className = "product-old-price";
-        old.textContent = p.old_price;
+        old.textContent = `₹${p.old_price}`;
         priceRow.appendChild(old);
       }
       body.appendChild(priceRow);
