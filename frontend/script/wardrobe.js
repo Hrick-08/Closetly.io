@@ -4,11 +4,10 @@
    Flow:
      pick image → POST {ML_SERVICE_URL}/classify  (existing API)
                 → { category, confidence, reasoning }
-                → confirm details (category prefilled,
-                  subcategory picked by user) → save to localStorage
+                → confirm details (category prefilled) → save to localStorage
 
-   Storage: closetlyWardrobe_<email>   (per logged-in user)
-   Each item: { id, image, name, category, subcategory, createdAt }
+  Storage: closetlyWardrobe_<email>   (per logged-in user)
+  Each item: { id, image, name, category, createdAt }
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -71,6 +70,21 @@ document.addEventListener("DOMContentLoaded", () => {
     alert:      document.getElementById("wbAlert"),
     sections:   document.getElementById("wbSections"),
 
+    categoryOverlay: document.getElementById("wbCategoryOverlay"),
+    categoryTitle:   document.getElementById("wbCategoryModalTitle"),
+    categoryMeta:    document.getElementById("wbCategoryMeta"),
+    categoryItems:   document.getElementById("wbCategoryItems"),
+    categoryClose:   document.getElementById("wbCategoryCloseBtn"),
+
+    itemOverlay:       document.getElementById("wbItemOverlay"),
+    itemClose:         document.getElementById("wbItemCloseBtn"),
+    itemDetailImg:     document.getElementById("wbItemDetailImg"),
+    itemDetailName:    document.getElementById("wbItemDetailName"),
+    itemDetailCategory:document.getElementById("wbItemDetailCategory"),
+    itemDetailAdded:   document.getElementById("wbItemDetailAdded"),
+    itemEditBtn:       document.getElementById("wbItemEditBtn"),
+    itemDeleteBtn:     document.getElementById("wbItemDeleteBtn"),
+
     overlay:     document.getElementById("wbOverlay"),
     step1:       document.getElementById("wbStep1"),
     step2:       document.getElementById("wbStep2"),
@@ -91,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
     classifyNote:   document.getElementById("wbClassifyNote"),
     itemName:       document.getElementById("wbItemName"),
     categorySelect: document.getElementById("wbCategory"),
-    subcatSelect:   document.getElementById("wbSubcategory"),
     backBtn:        document.getElementById("wbBackBtn"),
     saveBtn:        document.getElementById("wbSaveBtn"),
 
@@ -101,6 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let selectedFile = null;   // File being added
   let editingId = null;      // item id when in Edit mode
+  let activeCategory = "";
+  let activeItemId = null;
+  let addDefaultCategory = "";
   let items = loadItems();
 
   /* ============================================================
@@ -118,9 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const groupItems = items.filter((it) => it.category === group);
       const visible = groupItems.filter((it) =>
-        !query ||
-        (it.name || "").toLowerCase().includes(query) ||
-        (it.subcategory || "").toLowerCase().includes(query)
+        !query || (it.name || "").toLowerCase().includes(query)
       );
 
       const section = document.createElement("section");
@@ -131,6 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = document.createElement("h2");
       title.innerHTML = `${group} <span class="wb-count">${visible.length}</span>`;
       head.appendChild(title);
+
+      const addInline = document.createElement("button");
+      addInline.type = "button";
+      addInline.className = "wb-add-inline";
+      addInline.innerHTML = `<i class="bi bi-plus-lg"></i> Add Item`;
+      addInline.addEventListener("click", () => openAddModal(group, true));
+      head.appendChild(addInline);
       section.appendChild(head);
 
       if (!visible.length) {
@@ -138,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
         empty.className = "wb-empty-category";
 
         if (!query && groupItems.length === 0) {
-          /* Genuinely empty category */
           const icon = document.createElement("i");
           icon.className = "bi bi-inbox";
           const p1 = document.createElement("p");
@@ -151,10 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
           addSmall.type = "button";
           addSmall.className = "wb-add-small";
           addSmall.innerHTML = `<i class="bi bi-plus-lg"></i> Add Item`;
-          addSmall.addEventListener("click", openAddModal);
+          addSmall.addEventListener("click", () => openAddModal(group, true));
           empty.appendChild(addSmall);
         } else {
-          /* Filtered out everything in this category */
           const p = document.createElement("p");
           p.textContent = "No items match your search.";
           empty.appendChild(p);
@@ -166,11 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       totalVisible += visible.length;
-      const grid = document.createElement("div");
-      grid.className = "row g-3 wb-grid";
-
-      visible.forEach((item) => grid.appendChild(itemCard(item)));
-      section.appendChild(grid);
+      section.appendChild(categoryPreview(group, visible));
       els.sections.appendChild(section);
     });
 
@@ -188,12 +203,50 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function itemCard(item) {
+  function categoryPreview(category, categoryItems) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "wb-category-preview";
+    card.setAttribute("aria-label", `Open ${category} items`);
+
+    const collage = document.createElement("div");
+    collage.className = "wb-preview-collage";
+
+    categoryItems.slice(0, 4).forEach((item) => {
+      const img = document.createElement("img");
+      img.src = item.image || placeholderSvg();
+      img.alt = item.name || "Wardrobe item";
+      img.loading = "lazy";
+      collage.appendChild(img);
+    });
+
+    while (collage.children.length < 4) {
+      const ph = document.createElement("div");
+      ph.className = "wb-preview-placeholder";
+      collage.appendChild(ph);
+    }
+
+    const footer = document.createElement("div");
+    footer.className = "wb-category-preview-footer";
+    const text = document.createElement("span");
+    text.textContent = `${categoryItems.length} item${categoryItems.length === 1 ? "" : "s"} · Click to view`;
+    const icon = document.createElement("i");
+    icon.className = "bi bi-arrow-up-right";
+    footer.append(text, icon);
+
+    card.append(collage, footer);
+    card.addEventListener("click", () => openCategoryPopup(category));
+    return card;
+  }
+
+  function categoryItemCard(item) {
     const col = document.createElement("div");
     col.className = "col-6 col-md-4 col-lg-3 wb-item-col";
 
-    const card = document.createElement("article");
+    const card = document.createElement("button");
+    card.type = "button";
     card.className = "wb-card";
+    card.setAttribute("aria-label", `View ${item.name || "item"} details`);
 
     const imgWrap = document.createElement("div");
     imgWrap.className = "wb-card-image";
@@ -202,15 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
     img.loading = "lazy";
     img.src = item.image || placeholderSvg();
     imgWrap.appendChild(img);
-
-    const del = document.createElement("button");
-    del.type = "button";
-    del.className = "wb-icon-btn wb-delete-btn";
-    del.title = "Delete item";
-    del.setAttribute("aria-label", "Delete item");
-    del.innerHTML = `<i class="bi bi-trash"></i>`;
-    del.addEventListener("click", () => deleteItem(item.id));
-    imgWrap.appendChild(del);
 
     const body = document.createElement("div");
     body.className = "wb-card-body";
@@ -222,26 +266,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const catLine = document.createElement("span");
     catLine.className = "wb-card-cat";
-    catLine.textContent = item.subcategory
-      ? `${item.category} · ${item.subcategory}`
-      : item.category;
+    catLine.textContent = item.category;
     body.appendChild(catLine);
 
-    const edit = document.createElement("button");
-    edit.type = "button";
-    edit.className = "wb-edit-btn";
-    edit.innerHTML = `<i class="bi bi-pencil"></i> Edit Category`;
-    edit.addEventListener("click", () => openEditModal(item.id));
-    body.appendChild(edit);
+    const view = document.createElement("span");
+    view.className = "wb-edit-btn";
+    view.innerHTML = `<i class="bi bi-eye"></i> View Details`;
+    body.appendChild(view);
 
     card.append(imgWrap, body);
+    card.addEventListener("click", () => openItemPopup(item.id));
     col.appendChild(card);
     return col;
   }
 
+  function openCategoryPopup(category) {
+    activeCategory = category;
+    const query = els.search.value.trim().toLowerCase();
+    const categoryItems = items
+      .filter((it) => it.category === category)
+      .filter((it) => !query || (it.name || "").toLowerCase().includes(query));
+
+    els.categoryTitle.innerHTML = `<i class="bi bi-grid-3x3-gap"></i> ${category}`;
+    els.categoryMeta.textContent = `${categoryItems.length} item${categoryItems.length === 1 ? "" : "s"}`;
+    els.categoryItems.innerHTML = "";
+
+    if (!categoryItems.length) {
+      const empty = document.createElement("div");
+      empty.className = "wb-empty-category w-100";
+      empty.innerHTML = `<p>No items to show right now.</p>`;
+      els.categoryItems.appendChild(empty);
+    } else {
+      categoryItems.forEach((item) => els.categoryItems.appendChild(categoryItemCard(item)));
+    }
+
+    els.categoryOverlay.style.display = "grid";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeCategoryPopup() {
+    els.categoryOverlay.style.display = "none";
+    if (els.itemOverlay.style.display !== "grid" && els.overlay.style.display !== "grid") {
+      document.body.style.overflow = "";
+    }
+  }
+
+  function openItemPopup(itemId) {
+    const item = items.find((it) => it.id === itemId);
+    if (!item) return;
+
+    activeItemId = item.id;
+    els.itemDetailImg.src = item.image || placeholderSvg();
+    els.itemDetailName.textContent = item.name || "Untitled item";
+    els.itemDetailCategory.textContent = item.category || "-";
+    els.itemDetailAdded.textContent = formatDate(item.createdAt);
+
+    els.itemOverlay.style.display = "grid";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeItemPopup() {
+    els.itemOverlay.style.display = "none";
+    activeItemId = null;
+    if (els.categoryOverlay.style.display !== "grid" && els.overlay.style.display !== "grid") {
+      document.body.style.overflow = "";
+    }
+  }
+
+  function formatDate(value) {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  }
+
   function placeholderSvg() {
     return "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#f0ece5"/><text x="50%" y="50%" font-family="sans-serif" font-size="15" fill="#9a6037" text-anchor="middle">No image</text></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="#f0ece5"/><text x="50%" y="50%" font-family="sans-serif" font-size="45" fill="#9a6037" text-anchor="middle">No image</text></svg>`
     );
   }
 
@@ -259,11 +364,18 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================================================
      Add-item modal — step 1: choose & validate image
      ============================================================ */
-  function openAddModal() {
+  function openAddModal(defaultCategory = "", openManual = false) {
     editingId = null;
-    showStep(1);
+    addDefaultCategory = defaultCategory;
     clearFile();
     clearModalError();
+
+    if (openManual) {
+      prepareManualDetailsStep(defaultCategory);
+    } else {
+      showStep(1);
+    }
+
     els.overlay.style.display = "grid";
     document.body.style.overflow = "hidden";
   }
@@ -279,8 +391,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     els.itemName.value = item.name || "";
     fillCategorySelect(item.category);
-    fillSubcategorySelect(item.category, item.subcategory);
     els.classifyNote.hidden = true;
+    els.thumbImg.style.cursor = "default";
+    els.classifyNote.style.cursor = "default";
 
     els.backBtn.style.display = "none"; // nothing to go back to in edit mode
     els.saveBtn.innerHTML = `<i class="bi bi-check-lg"></i> Save Changes`;
@@ -293,9 +406,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function closeModal() {
     if (els.loading.style.display === "grid") return; // don't close mid-analyze
     els.overlay.style.display = "none";
-    document.body.style.overflow = "";
+    if (els.categoryOverlay.style.display !== "grid" && els.itemOverlay.style.display !== "grid") {
+      document.body.style.overflow = "";
+    }
     clearFile();
     editingId = null;
+    addDefaultCategory = "";
   }
 
   function showStep(n) {
@@ -344,6 +460,11 @@ document.addEventListener("DOMContentLoaded", () => {
       els.changeBtn.style.display = "";
       els.removeBtn.style.display = "";
       els.analyzeBtn.disabled = false;
+
+      /* If user is in details step (manual mode/edit path), reflect upload there too. */
+      if (els.step2.style.display !== "none") {
+        els.thumbImg.src = ev.target.result;
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -358,6 +479,23 @@ document.addEventListener("DOMContentLoaded", () => {
     els.removeBtn.style.display = "none";
     els.analyzeBtn.disabled = true;
     clearModalError();
+
+    if (els.step2.style.display !== "none" && !editingId) {
+      els.thumbImg.src = placeholderSvg();
+    }
+  }
+
+  function prepareManualDetailsStep(defaultCategory = "") {
+    showStep(2);
+    els.thumbImg.src = placeholderSvg();
+    els.itemName.value = "";
+    fillCategorySelect(defaultCategory || addDefaultCategory || "");
+    els.classifyNote.textContent =
+      "Manual mode: Click here to upload an image";
+    els.classifyNote.hidden = false;
+    els.thumbImg.style.cursor = "pointer";
+    els.classifyNote.style.cursor = "pointer";
+    els.backBtn.style.display = "";
   }
 
   /* Modal events — step 1 */
@@ -368,11 +506,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === els.overlay) closeModal();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && els.overlay.style.display === "grid") closeModal();
+    if (e.key !== "Escape") return;
+    if (els.itemOverlay.style.display === "grid") {
+      closeItemPopup();
+      return;
+    }
+    if (els.categoryOverlay.style.display === "grid") {
+      closeCategoryPopup();
+      return;
+    }
+    if (els.overlay.style.display === "grid") closeModal();
   });
 
   els.dropzone.addEventListener("click", () => els.fileInput.click());
   els.changeBtn.addEventListener("click", () => els.fileInput.click());
+  els.thumbImg.addEventListener("click", () => {
+    if (els.step2.style.display === "none") return;
+    els.fileInput.click();
+  });
+  els.classifyNote.addEventListener("click", () => {
+    if (els.step2.style.display === "none") return;
+    els.fileInput.click();
+  });
   els.fileInput.addEventListener("change", () => validateAndSetFile(els.fileInput.files[0]));
   els.removeBtn.addEventListener("click", clearFile);
 
@@ -462,7 +617,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const confidence = result ? String(result.confidence || "").toLowerCase() : "";
 
     fillCategorySelect(detected);
-    fillSubcategorySelect(detected, "");
 
     els.thumbImg.src = els.previewImg.src;
 
@@ -483,6 +637,9 @@ document.addEventListener("DOMContentLoaded", () => {
         `Looks like ${detected}. Adjust anything that's wrong.`;
       els.classifyNote.hidden = false;
     }
+
+    els.thumbImg.style.cursor = "default";
+    els.classifyNote.style.cursor = "default";
 
     els.backBtn.style.display = "";   // allow changing the image
     showStep(2);
@@ -509,21 +666,6 @@ document.addEventListener("DOMContentLoaded", () => {
     els.categorySelect.value = selected || "";
   }
 
-  function fillSubcategorySelect(category, selected) {
-    els.subcatSelect.innerHTML = '<option value="">Select Subcategory</option>';
-    (TAXONOMY[category] || []).forEach((sub) => {
-      els.subcatSelect.add(new Option(sub, sub));
-    });
-    els.subcatSelect.disabled = !category;
-    els.subcatSelect.value = selected && (TAXONOMY[category] || []).includes(selected)
-      ? selected
-      : "";
-  }
-
-  els.categorySelect.addEventListener("change", () =>
-    fillSubcategorySelect(els.categorySelect.value, "")
-  );
-
   els.backBtn.addEventListener("click", () => showStep(1));
 
   els.saveBtn.addEventListener("click", () => {
@@ -539,16 +681,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (item) {
         item.name = name;
         item.category = category;
-        item.subcategory = els.subcatSelect.value;
         saveItems(items);
       }
     } else {
       const item = {
         id: generateId(),
-        image: downscaleImage(),
+        image: selectedFile ? downscaleImage() : "",
         name: name,
         category: category,
-        subcategory: els.subcatSelect.value,
         createdAt: new Date().toISOString()
       };
       items.push(item);
@@ -597,8 +737,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirm("Remove this item from your wardrobe?")) return;
     items = items.filter((i) => i.id !== itemId);
     saveItems(items);
+    closeItemPopup();
+    if (activeCategory) openCategoryPopup(activeCategory);
     render();
   }
+
+  els.categoryClose.addEventListener("click", closeCategoryPopup);
+  els.categoryOverlay.addEventListener("click", (e) => {
+    if (e.target === els.categoryOverlay) closeCategoryPopup();
+  });
+
+  els.itemClose.addEventListener("click", closeItemPopup);
+  els.itemOverlay.addEventListener("click", (e) => {
+    if (e.target === els.itemOverlay) closeItemPopup();
+  });
+
+  els.itemEditBtn.addEventListener("click", () => {
+    const itemId = activeItemId;
+    if (!itemId) return;
+    closeItemPopup();
+    closeCategoryPopup();
+    openEditModal(itemId);
+  });
+
+  els.itemDeleteBtn.addEventListener("click", () => {
+    if (!activeItemId) return;
+    deleteItem(activeItemId);
+  });
 
   /* ============================================================
      Init

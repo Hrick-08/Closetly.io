@@ -25,48 +25,56 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* Pages that require authentication */
-  const protectedPages = ["wardrobe", "settings"];
+  const protectedPages = ["search", "wardrobe", "settings"];
 
   /* ---------- Page navigation ---------- */
   function showPage(pageId) {
-    /* Search lives on its own dedicated page */
-    if (pageId === "search") {
-      window.location.href = "pages/search.html";
-      return;
-    }
 
-    /* Wardrobe lives on its own dedicated page */
-    if (pageId === "wardrobe") {
-      window.location.href = isLoggedIn() ? "pages/wardrobe.html" : "pages/login.html";
-      return;
-    }
-
-    /* Protect specific pages behind auth gate */
+    // Protect pages that require authentication
     if (protectedPages.includes(pageId) && !isLoggedIn()) {
-      showAuthGate();
-      return;
+        showAuthGate();
+        return;
+    }
+
+    // Search lives on its own dedicated page
+    if (pageId === "search") {
+        window.location.href = "pages/search.html";
+        return;
+    }
+
+    // Wardrobe lives on its own dedicated page
+    if (pageId === "wardrobe") {
+        window.location.href = "pages/wardrobe.html";
+        return;
+    }
+
+    // Settings lives on its own dedicated page
+    if (pageId === "settings") {
+        window.location.href = "pages/myprofile.html";
+        return;
     }
 
     hideAuthGate();
 
     pages.forEach((page) => {
-      page.classList.toggle("active-page", page.id === pageId);
+        page.classList.toggle("active-page", page.id === pageId);
     });
 
     navItems.forEach((item) => {
-      item.classList.toggle("active", item.dataset.page === pageId);
+        item.classList.toggle("active", item.dataset.page === pageId);
     });
 
     window.scrollTo({
-      top: 0,
-      behavior: "smooth"
+        top: 0,
+        behavior: "smooth"
     });
 
-    /* Close Bootstrap mobile navbar after navigation */
+    // Close Bootstrap mobile navbar after navigation
     const navCollapse = document.getElementById("mainNav");
+
     if (navCollapse && navCollapse.classList.contains("show")) {
-      const collapse = bootstrap.Collapse.getInstance(navCollapse);
-      if (collapse) collapse.hide();
+        const collapse = bootstrap.Collapse.getInstance(navCollapse);
+        if (collapse) collapse.hide();
     }
   }
 
