@@ -107,9 +107,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- Set avatar initial ---------- */
+  // const navAvatar = document.getElementById("navAvatar");
+  // if (isLoggedIn() && navAvatar) {
+  //   navAvatar.textContent = Auth.getInitial();
+  // }
+  
+  // ---------- Set avatar ----------
   const navAvatar = document.getElementById("navAvatar");
+
   if (isLoggedIn() && navAvatar) {
-    navAvatar.textContent = Auth.getInitial();
+      const profile = Auth.getProfile();
+
+      if (profile && profile.profilePhoto) {
+          navAvatar.innerHTML = `
+              <img
+                  src="${profile.profilePhoto}"
+                  alt="Profile"
+                  class="nav-avatar-img"
+              />
+          `;
+      } else {
+          navAvatar.textContent = Auth.getInitial();
+      }
   }
 
   /* ---------- Logout ---------- */
