@@ -1,0 +1,80 @@
+<!-- ============================================================
+     Closetly — Shared site footer
+     Injected by script/footer.js into <div id="siteFooter">.
+     Links/images use data-root-path so they resolve correctly
+     from both /index.html and /pages/*.html.
+     Account links marked data-auth-only="guest" are shown only
+     to logged-out visitors (handled by footer.js + auth.js).
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="sf-inner">
+
+    <div class="row g-4 g-xl-5">
+
+      <!-- Column 1 — Brand -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="sf-brand-row">
+          <img data-root-path="assets/closetly-logo.png" src="#" alt="Closetly logo" class="sf-brand-logo" />
+          <span class="sf-brand-name">Closetly</span>
+        </div>
+        <p class="sf-desc">
+          Your personal digital wardrobe and fashion discovery platform.
+        </p>
+        <p class="sf-tagline">Your style. Your wardrobe. Your way.</p>
+      </div>
+
+      <!-- Column 2 — Explore -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <h2 class="sf-title">Explore</h2>
+        <nav aria-label="Explore">
+          <ul class="sf-links">
+            <li><a href="#" data-root-path="index.html">Home</a></li>
+            <li><a href="#" data-root-path="pages/search.html">Search</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html">Wardrobe</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Column 3 — Account -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <h2 class="sf-title">Account</h2>
+        <nav aria-label="Account">
+          <ul class="sf-links">
+            <li><a href="#" data-root-path="pages/myprofile.html">My Profile</a></li>
+            <li><a href="#" data-root-path="pages/myprofile.html">Settings</a></li>
+            <li hidden data-auth-only="guest"><a href="#" data-root-path="pages/login.html">Log In</a></li>
+            <li hidden data-auth-only="guest"><a href="#" data-root-path="pages/signup.html">Sign Up</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Column 4 — Categories -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <h2 class="sf-title">Categories</h2>
+        <nav aria-label="Browse wardrobe categories">
+          <ul class="sf-links sf-links-wrap">
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Tops">Tops</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Bottoms">Bottoms</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Outerwear">Outerwear</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Dresses/Jumpsuits">Dresses &amp; Jumpsuits</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Footwear">Footwear</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Accessories">Accessories</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Ethnic/Traditional Wear">Ethnic Wear</a></li>
+            <li><a href="#" data-root-path="pages/wardrobe.html?category=Activewear">Activewear</a></li>
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="sf-bottom">
+      <span>&copy; 2026 Closetly. All rights reserved.</span>
+      <div class="sf-bottom-links">
+        <span>Privacy Policy</span>
+        <span>Terms of Service</span>
+      </div>
+    </div>
+
+  </div>
+</footer>
