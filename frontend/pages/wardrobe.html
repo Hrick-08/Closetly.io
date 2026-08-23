@@ -1,263 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Wardrobe — Closetly</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closetly — Your Wardrobe</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F6F3EE;
+    --ink:#23282D;
+    --clay:#9A6037;
+    --clay-dark:#7E4E2C;
+    --badge:#F1E4D8;
+    --navy:#2C3942;
+    --hairline:#E9E2D6;
+  }
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+  }
+  .brand-title{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:1.6rem;
+    letter-spacing:.2px;
+  }
+  .brand-sub{
+    font-size:.72rem;
+    color:#8a7f6f;
+    letter-spacing:.03em;
+  }
+  .navbar{
+    background:var(--cream);
+    border-bottom:1px solid var(--hairline);
+  }
+  .nav-link-custom{
+    color:var(--ink);
+    font-weight:500;
+    font-size:.95rem;
+    padding:.4rem .9rem !important;
+  }
+  .nav-link-custom.active{
+    color:var(--clay-dark);
+    border-bottom:2px solid var(--clay);
+  }
+  .hero-card{
+    background:#fff;
+    border:1px solid var(--hairline);
+    border-radius:18px;
+    max-width:620px;
+    margin:5rem auto 3rem;
+    padding:3.5rem 2.5rem;
+    text-align:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.03);
+  }
+  .icon-badge{
+    width:64px;height:64px;
+    background:var(--badge);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 1.2rem;
+    color:var(--clay);
+    font-size:1.5rem;
+  }
+  .eyebrow{
+    font-size:.72rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--clay-dark);
+    font-weight:600;
+  }
+  .hero-card h1{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    margin:.4rem 0 .8rem;
+  }
+  .hero-card p{
+    color:#5c5347;
+    max-width:420px;
+    margin:0 auto 1.8rem;
+  }
+  .btn-clay{
+    background:var(--clay);
+    border:none;
+    color:#fff;
+    font-weight:600;
+    padding:.65rem 1.5rem;
+    border-radius:10px;
+  }
+  .btn-clay:hover{ background:var(--clay-dark); color:#fff; }
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  /* --- Add Clothing modal --- */
+  .modal-content{ border-radius:16px; border:none; }
+  .modal-header{ border-bottom:1px solid var(--hairline); }
+  .add-option{
+    flex:1;
+    border:1.5px solid var(--hairline);
+    border-radius:14px;
+    padding:1.6rem 1rem;
+    background:#fff;
+    transition:.15s;
+    cursor:pointer;
+  }
+  .add-option:hover:not(:disabled){
+    border-color:var(--clay);
+    background:#FBF3EA;
+  }
+  .add-option:disabled{
+    cursor:not-allowed;
+    opacity:.55;
+  }
+  .add-option i{
+    font-size:1.9rem;
+    color:var(--clay-dark);
+  }
+  .add-option .label{
+    font-weight:600;
+    margin-top:.6rem;
+    display:block;
+    color:var(--ink);
+  }
+  .add-option .hint{
+    font-size:.75rem;
+    color:#9a9186;
+  }
 
-  <link rel="stylesheet" href="../style/style.css" />
-  <link rel="stylesheet" href="../style/profile.css" />
-  <link rel="stylesheet" href="../style/wardrobe.css" />
+  /* --- Wardrobe sections --- */
+  .section-title{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:1.3rem;
+    margin-bottom:1rem;
+  }
+  .wardrobe-section{ margin-bottom:2.5rem; }
+  .wardrobe-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .wardrobe-item{
+    width:120px;
+  }
+  .wardrobe-item img{
+    width:120px;height:120px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid var(--hairline);
+    background:#fff;
+  }
+  .wardrobe-item .tag{
+    font-size:.68rem;
+    color:#8a7f6f;
+    margin-top:.3rem;
+    text-align:center;
+  }
+  .empty-note{
+    color:#9a9186;
+    font-size:.85rem;
+    font-style:italic;
+  }
+  #wardrobeSections{ display:none; max-width:900px; margin:0 auto 4rem; }
+</style>
 </head>
-
 <body>
-  <div class="wardrobe-page">
 
-    <!-- Top bar -->
-    <div class="profile-topbar">
-      <a href="../index.html" class="profile-topbar-brand">
-        <i class="bi bi-arrow-left"></i>
-        <img src="../assets/closetly-logo.png" alt="Closetly logo" class="profile-topbar-logo" />
-        <span>Closetly</span>
-      </a>
-      <div class="profile-topbar-right">
-        <nav class="wardrobe-topnav">
-          <a href="../index.html">Home</a>
-          <a href="./search.html">Search</a>
-          <a href="./wardrobe.html" class="active">Wardrobe</a>
-          <a href="./myprofile.html">Settings</a>
-        </nav>
+<nav class="navbar navbar-expand-lg py-3">
+  <div class="container">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-person-standing" style="font-size:1.8rem;color:var(--clay-dark)"></i>
+      <div>
+        <div class="brand-title">Closetly</div>
+        <div class="brand-sub">Your style. Your wardrobe. Your way.</div>
       </div>
     </div>
-
-    <!-- ================= WARDROBE ================= -->
-    <main class="wardrobe-main">
-      <div class="wardrobe-container">
-
-        <!-- Header -->
-        <header class="wardrobe-header">
-          <div>
-            <p class="eyebrow">YOUR CLOSET</p>
-            <h1>My <span>Wardrobe</span></h1>
-            <p class="wardrobe-subtitle">Your clothes, organized in one place.</p>
-          </div>
-          <button type="button" class="btn-primary-custom" id="addItemBtn">
-            <i class="bi bi-plus-lg"></i> Add Item
-          </button>
-        </header>
-
-        <!-- Toolbar -->
-        <div class="wardrobe-toolbar">
-          <div class="wb-search-wrap">
-            <i class="bi bi-search"></i>
-            <input type="text" id="wbSearch" placeholder="Search your clothes..." maxlength="60" />
-          </div>
-          <select id="wbFilterCategory"></select>
-        </div>
-
-        <!-- Alert -->
-        <div class="wb-alert" id="wbAlert" hidden></div>
-
-        <!-- Category sections (rendered by JS) -->
-        <div id="wbSections"></div>
-
-      </div>
-    </main>
-
-    <!-- ================= CATEGORY ITEMS POPUP ================= -->
-    <div class="wb-overlay" id="wbCategoryOverlay" style="display:none;">
-      <div class="wb-modal wb-modal-wide" role="dialog" aria-label="Category items">
-        <div class="wb-modal-header">
-          <h3 id="wbCategoryModalTitle"><i class="bi bi-grid-3x3-gap"></i> Category</h3>
-          <button type="button" class="wb-close" id="wbCategoryCloseBtn" aria-label="Close">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-        <p class="wb-hint" id="wbCategoryMeta"></p>
-        <div class="row g-3 wb-grid" id="wbCategoryItems"></div>
-      </div>
+    <div class="d-none d-lg-flex gap-4 mx-auto">
+      <a href="../index.html" class="nav-link-custom"><i class="bi bi-house me-1"></i>Home</a>
+      <a href="search.html" class="nav-link-custom"><i class="bi bi-search me-1"></i>Search</a>
+      <a href="wardrobe.html" class="nav-link-custom active"><i class="bi bi-bag-fill me-1"></i>Wardrobe</a>
+      <a href="settings.html" class="nav-link-custom"><i class="bi bi-gear me-1"></i>Settings</a>
     </div>
-
-    <!-- ================= ITEM DETAILS POPUP ================= -->
-    <div class="wb-overlay" id="wbItemOverlay" style="display:none;">
-      <div class="wb-modal wb-modal-medium" role="dialog" aria-label="Item details">
-        <div class="wb-modal-header">
-          <h3><i class="bi bi-image"></i> Item Details</h3>
-          <button type="button" class="wb-close" id="wbItemCloseBtn" aria-label="Close">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-
-        <div class="wb-item-detail">
-          <img id="wbItemDetailImg" alt="Wardrobe item" />
-          <div class="wb-item-detail-body">
-            <h4 id="wbItemDetailName">Item Name</h4>
-            <p><strong>Category:</strong> <span id="wbItemDetailCategory">-</span></p>
-            <p><strong>Added:</strong> <span id="wbItemDetailAdded">-</span></p>
-          </div>
-        </div>
-
-        <div class="wb-actions">
-          <button type="button" class="btn-outline-custom" id="wbItemEditBtn">
-            <i class="bi bi-pencil"></i> Edit
-          </button>
-          <button type="button" class="btn-outline-custom wb-remove-btn" id="wbItemDeleteBtn">
-            <i class="bi bi-trash"></i> Delete
-          </button>
-        </div>
-      </div>
+    <div class="d-flex align-items-center gap-1">
+      <div class="rounded-circle d-flex align-items-center justify-content-center"
+           style="width:32px;height:32px;background:var(--navy);color:#fff;font-size:.8rem;font-weight:600;">H</div>
+      <i class="bi bi-chevron-down small text-muted"></i>
     </div>
-
-    <!-- ================= ADD ITEM MODAL ================= -->
-    <div class="wb-overlay" id="wbOverlay" style="display:none;">
-      <div class="wb-modal" role="dialog" aria-label="Add wardrobe item">
-
-        <!-- Step 1: choose image -->
-        <div id="wbStep1">
-          <div class="wb-modal-header">
-            <h3><i class="bi bi-plus-lg"></i> Add Item</h3>
-            <button type="button" class="wb-close" id="wbCloseBtn" aria-label="Close">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-          <p class="wb-hint">
-            Upload a photo of a clothing item — our AI will figure out what it is.
-          </p>
-
-          <div class="wb-dropzone" id="wbDropzone">
-            <i class="bi bi-cloud-arrow-up"></i>
-            <strong>Drag &amp; drop your image here</strong>
-            <span>or click to browse — JPG, PNG, WEBP (max 8 MB)</span>
-            <input type="file" id="wbFileInput" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
-          </div>
-
-          <div class="wb-preview" id="wbPreview" style="display:none;">
-            <img id="wbPreviewImg" alt="Selected clothing item preview" />
-            <div class="wb-preview-info">
-              <strong id="wbFileName"></strong>
-              <span id="wbFileSize"></span>
-            </div>
-          </div>
-
-          <p class="wb-error" id="wbError" hidden></p>
-
-          <div class="wb-actions">
-            <button type="button" class="btn-outline-custom" id="wbChangeBtn" style="display:none;">
-              <i class="bi bi-arrow-repeat"></i> Change Image
-            </button>
-            <button type="button" class="btn-outline-custom wb-remove-btn" id="wbRemoveBtn" style="display:none;">
-              <i class="bi bi-trash"></i> Remove
-            </button>
-            <button type="button" class="btn-primary-custom" id="wbAnalyzeBtn" disabled>
-              <i class="bi bi-stars"></i> Analyze Item
-            </button>
-          </div>
-        </div>
-
-        <!-- Step 2: confirm details -->
-        <div id="wbStep2" style="display:none;">
-          <div class="wb-modal-header">
-            <h3><i class="bi bi-tag"></i> Item Details</h3>
-            <button type="button" class="wb-close" id="wbCloseBtn2" aria-label="Close">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <div class="wb-step2-row">
-            <img id="wbThumbImg" alt="Item thumbnail" />
-            <p class="wb-classify-note" id="wbClassifyNote" hidden></p>
-          </div>
-
-          <label class="wb-label" for="wbItemName">Item Name</label>
-          <input type="text" id="wbItemName" placeholder="e.g. Black Hoodie" maxlength="60" />
-
-          <label class="wb-label" for="wbCategory">Category</label>
-          <select id="wbCategory"></select>
-
-          <div class="wb-actions">
-            <button type="button" class="btn-outline-custom" id="wbBackBtn" style="display:none;">
-              <i class="bi bi-arrow-left"></i> Back
-            </button>
-            <button type="button" class="btn-primary-custom" id="wbSaveBtn">
-              <i class="bi bi-check-lg"></i> Add to Wardrobe
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ================= LOADING OVERLAY ================= -->
-    <div class="wb-loading" id="wbLoading" style="display:none;">
-      <div class="wb-loading-card">
-        <div class="spinner-border" role="status" aria-hidden="true"></div>
-        <p id="wbLoadingText">Analyzing your item...</p>
-      </div>
-    </div>
-
-    <!-- ================= AI ASSISTANT ================= -->
-      <div class="ai-assistant" id="aiAssistant">
-        <!-- Floating button -->
-        <button class="ai-assistant-button" id="aiAssistantToggle" aria-label="Open AI Assistant">
-          <i class="bi bi-stars"></i>
-        </button>
-
-        <!-- Chat box -->
-        <div class="ai-chatbox" id="aiChatbox">
-          <div class="ai-chat-header">
-            <div class="ai-chat-title">
-              <div class="ai-chat-avatar">
-                <i class="bi bi-stars"></i>
-              </div>
-              <div>
-                <strong>Closetly AI</strong>
-                <small>Your personal stylist</small>
-              </div>
-            </div>
-
-            <button class="ai-chat-close" id="aiChatClose" aria-label="Close chat">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <div class="ai-chat-messages" id="aiChatMessages">
-            <div class="ai-message ai-message-bot">
-              <div class="ai-message-avatar">
-                <i class="bi bi-stars"></i>
-              </div>
-              <div class="ai-message-content">
-                Hey! I'm your Closetly AI stylist. What are you looking for today?
-              </div>
-            </div>
-          </div>
-
-          <div class="ai-chat-suggestions">
-            <button class="ai-suggestion">Suggest an outfit</button>
-            <button class="ai-suggestion">What should I wear?</button>
-            <button class="ai-suggestion">Style my wardrobe</button>
-          </div>
-
-          <form class="ai-chat-input-area" id="aiChatForm">
-            <input
-              type="text"
-              id="aiChatInput"
-              placeholder="Ask your stylist..."
-              autocomplete="off"
-            />
-            <button type="submit" aria-label="Send message">
-              <i class="bi bi-arrow-up"></i>
-            </button>
-          </form>
-        </div>
-      </div>
-
   </div>
+</nav>
 
-  <script src="../script/auth.js"></script>
-  <script src="../script/wardrobe.js"></script>
-  <script src="../script/assistant.js"></script>
+<!-- Hero / empty state trigger -->
+<div class="hero-card" id="heroCard">
+  <div class="icon-badge"><i class="bi bi-bag"></i></div>
+  <div class="eyebrow">Your Closet</div>
+  <h1>Your Wardrobe</h1>
+  <p>Manage your clothes, view AI-generated tags, and build outfits from everything you own.</p>
+  <button class="btn btn-clay" data-bs-toggle="modal" data-bs-target="#addClothingModal">
+    <i class="bi bi-plus-lg me-1"></i>Add Clothing
+  </button>
+</div>
+
+<!-- Category sections (populated after first upload) -->
+<div id="wardrobeSections" class="container">
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-clay btn-sm" data-bs-toggle="modal" data-bs-target="#addClothingModal">
+      <i class="bi bi-plus-lg me-1"></i>Add Clothing
+    </button>
+  </div>
+  <div class="wardrobe-section" id="section-Shirts">
+    <div class="section-title">Shirts</div>
+    <div class="wardrobe-grid"><span class="empty-note">No shirts added yet.</span></div>
+  </div>
+  <div class="wardrobe-section" id="section-Tshirts">
+    <div class="section-title">T-Shirts</div>
+    <div class="wardrobe-grid"><span class="empty-note">No t-shirts added yet.</span></div>
+  </div>
+  <div class="wardrobe-section" id="section-Jeans">
+    <div class="section-title">Jeans</div>
+    <div class="wardrobe-grid"><span class="empty-note">No jeans added yet.</span></div>
+  </div>
+  <div class="wardrobe-section" id="section-Suits">
+    <div class="section-title">Suits</div>
+    <div class="wardrobe-grid"><span class="empty-note">No suits added yet.</span></div>
+  </div>
+  <div class="wardrobe-section" id="section-Other">
+    <div class="section-title">Other</div>
+    <div class="wardrobe-grid"><span class="empty-note">Nothing here yet.</span></div>
+  </div>
+</div>
+
+<!-- Add Clothing modal — has 3 states, only one visible at a time:
+     1. modalStateChoose  — Camera (dummy) / Choose from device
+     2. modalStateLoading — spinner while /api/classify runs
+     3. modalStateResult  — thumbnail + predicted category, then
+                             auto-closes and the wardrobe re-renders -->
+<div class="modal fade" id="addClothingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-semibold">Add Clothing</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div id="modalStateChoose">
+          <p class="text-muted small mb-3">Choose how you'd like to add an item to your wardrobe.</p>
+          <div class="d-flex gap-3">
+            <button class="add-option" id="cameraBtn" disabled title="Camera capture is coming soon">
+              <i class="bi bi-camera"></i>
+              <span class="label">Camera</span>
+              <span class="hint">Coming soon</span>
+            </button>
+            <button class="add-option" id="deviceBtn">
+              <i class="bi bi-upload"></i>
+              <span class="label">Choose from device</span>
+              <span class="hint">JPG, PNG</span>
+            </button>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+
+        <div id="modalStateLoading" class="text-center py-4" style="display:none;">
+          <div class="spinner-border text-secondary" role="status"></div>
+          <p class="mt-3 text-muted small">Classifying your item…</p>
+        </div>
+
+        <div id="modalStateResult" class="text-center py-3" style="display:none;">
+          <img id="resultThumb" src="" alt="Uploaded item"
+               style="width:140px;height:140px;object-fit:cover;border-radius:10px;border:1px solid var(--hairline);">
+          <div class="mt-3"><i class="bi bi-check-circle-fill" style="color:#4a7c4e;font-size:1.4rem;"></i></div>
+          <div class="mt-1">Added to <strong id="resultLabel"></strong></div>
+          <div class="text-muted small" id="resultRawLabel"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../script/wardrobe.js"></script>
 </body>
 </html>

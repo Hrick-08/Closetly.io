@@ -46,10 +46,9 @@
   transform: translateX(-3px);
 }
 
-.myprofile-topbar-logo {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+.myprofile-topbar-brand i.bi-person-standing-dress {
+  color: var(--brown);
+  font-size: 22px;
 }
 
 .myprofile-topbar-brand span {

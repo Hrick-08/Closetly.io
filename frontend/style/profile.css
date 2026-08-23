@@ -40,12 +40,6 @@
   font-size: 22px;
 }
 
-.profile-topbar-logo {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
 .profile-topbar-brand span {
   font-family: "Playfair Display", serif;
   font-size: 20px;

@@ -41,3 +41,5 @@ async def classify(image: UploadFile = File(...)):
     )
 
     return ClassifyResponse(**result)
+
+

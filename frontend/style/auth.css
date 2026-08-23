@@ -40,9 +40,8 @@
 }
 
 .auth-brand-icon {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
+  color: var(--brown);
+  font-size: 26px;
 }
 
 .auth-brand-name {

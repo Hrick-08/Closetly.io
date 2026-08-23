@@ -180,9 +180,6 @@ SERPAPI_KEY=
 | POST | `/shop-lookup` | Product search from a reference image |
 | POST | `/score` | Outfit compatibility score |
 | POST | `/rag` | RAG-based fashion advice |
-| GET | `/health` | Service status |
-| POST | `/classify` | Classify a clothing image into 8 categories |
-| POST | `/search` | Text **or image** → Google Shopping products |
 
 ---
 
