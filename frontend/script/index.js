@@ -29,6 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- Page navigation ---------- */
   function showPage(pageId) {
+    /* Search lives on its own dedicated page */
+    if (pageId === "search") {
+      window.location.href = "pages/search.html";
+      return;
+    }
+
+    /* Wardrobe lives on its own dedicated page */
+    if (pageId === "wardrobe") {
+      window.location.href = isLoggedIn() ? "pages/wardrobe.html" : "pages/login.html";
+      return;
+    }
+
     /* Protect specific pages behind auth gate */
     if (protectedPages.includes(pageId) && !isLoggedIn()) {
       showAuthGate();
