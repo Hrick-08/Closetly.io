@@ -63,6 +63,9 @@
           <div class="input-wrap">
             <i class="bi bi-lock field-icon"></i>
             <input type="password" id="suPassword" placeholder="Min. 8 characters" autocomplete="new-password" />
+            <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">
+              <i class="bi bi-eye" aria-hidden="true"></i>
+            </button>
           </div>
           <div class="auth-error-msg" id="suPassErr"></div>
         </div>
@@ -72,6 +75,9 @@
           <div class="input-wrap">
             <i class="bi bi-lock-fill field-icon"></i>
             <input type="password" id="suConfirm" placeholder="Re-enter your password" autocomplete="new-password" />
+            <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">
+              <i class="bi bi-eye" aria-hidden="true"></i>
+            </button>
           </div>
           <div class="auth-error-msg" id="suConfirmErr"></div>
         </div>
@@ -97,6 +103,18 @@
     const form = document.getElementById("signupForm");
     const errBanner = document.getElementById("signupError");
     const errText = document.getElementById("signupErrorText");
+
+    document.querySelectorAll(".password-toggle").forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        const input = toggle.closest(".input-wrap").querySelector("input");
+        const icon = toggle.querySelector("i");
+        const isVisible = input.type === "text";
+        input.type = isVisible ? "password" : "text";
+        toggle.setAttribute("aria-label", isVisible ? "Show password" : "Hide password");
+        toggle.setAttribute("aria-pressed", String(!isVisible));
+        icon.className = isVisible ? "bi bi-eye" : "bi bi-eye-slash";
+      });
+    });
 
     function showFieldError(id, msg) {
       const el = document.getElementById(id);
