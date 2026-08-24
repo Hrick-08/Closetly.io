@@ -106,12 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ---------- Set avatar initial ---------- */
-  // const navAvatar = document.getElementById("navAvatar");
-  // if (isLoggedIn() && navAvatar) {
-  //   navAvatar.textContent = Auth.getInitial();
-  // }
-  
   // ---------- Set avatar ----------
   const navAvatar = document.getElementById("navAvatar");
 
@@ -131,12 +125,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
   }
 
-  /* ---------- Logout ---------- */
+  /* ---------- Logout / Login ---------- */
   const ddLogout = document.getElementById("ddLogout");
   if (ddLogout) {
+    // Reflect the correct label + icon based on auth state
+    if (isLoggedIn()) {
+      ddLogout.innerHTML = `<i class="bi bi-box-arrow-right"></i> Logout`;
+    } else {
+      ddLogout.innerHTML = `<i class="bi bi-box-arrow-in-right"></i> Login`;
+    }
+
     ddLogout.addEventListener("click", () => {
       closeDropdown();
-      if (typeof Auth !== "undefined") Auth.logOut();
+      if (isLoggedIn()) {
+        // Only actually log out if a session exists
+        if (typeof Auth !== "undefined") Auth.logOut();
+      }
       window.location.href = "pages/login.html";
     });
   }
