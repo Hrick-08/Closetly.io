@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Only run on the Search page */
   if (!document.getElementById("openVisualSearchBtn")) return;
 
+  /* ---------- Auth guard (search belongs to a logged-in user) ---------- */
+  if (typeof Auth === "undefined" || !Auth.isLoggedIn()) {
+    window.location.href = "login.html";
+    return;
+  }
+
   /* ---------- Config ---------- */
   const ML_SERVICE_URL = "http://localhost:8000";
   const MAX_FILE_MB = 8;
