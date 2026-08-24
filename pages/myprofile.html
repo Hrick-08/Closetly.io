@@ -183,14 +183,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      const profile = Auth.getProfile();
       const account = Auth.getAccount();
-
-      /* If no profile completed, send to setup */
-      if (!profile || !profile.name) {
-        window.location.href = "profile.html?mode=setup";
-        return;
-      }
+      const profile = { ...(account || {}), ...Auth.getProfile() };
 
       /* Helper to set text */
       const setText = (id, val) => {
