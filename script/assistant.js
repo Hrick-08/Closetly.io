@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Base URL of the FastAPI microservice. Change this if you deploy it
   // somewhere other than localhost.
-  const MICROSERVICE_URL = "http://127.0.0.1:8000";
+  const MICROSERVICE_URL = "https://closetly-io.onrender.com";
 
   // Key used to persist the conversation across page navigations.
   // sessionStorage survives moving between pages in the same tab,

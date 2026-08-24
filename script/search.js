@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- Config ---------- */
-  const ML_SERVICE_URL = "http://localhost:8000";
+  const ML_SERVICE_URL = "https://closetly-io.onrender.com";
   const MAX_FILE_MB = 8;
   const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
