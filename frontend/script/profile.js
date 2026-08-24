@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- Auth guard ---------- */
   if (typeof Auth === "undefined" || !Auth.isLoggedIn()) {
-    window.location.href = "login.html";
+    window.location.href = "l ogin.html";
     return;
   }
 

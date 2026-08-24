@@ -3,7 +3,9 @@
    Designed for easy swap to REST API later.
 
    Storage keys:
-     closetlyAuth    — account registration (name, email, phone)
+     closetlyAuth    — account registration (name, email, phone,
+                       passwordHash — SHA-256 hex digest, never the
+                       plaintext password)
                        Persists across logouts. Cleared only on
                        account deletion.
      closetlySession — session state (isAuthenticated)
@@ -26,6 +28,21 @@ const Auth = (() => {
 
   function _write(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  /**
+   * SHA-256 hash of a password, hex-encoded.
+   * Uses the Web Crypto API (crypto.subtle) — never store or compare
+   * plaintext passwords.
+   */
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("");
   }
 
   /* ---------- public API ---------- */
@@ -62,11 +79,14 @@ const Auth = (() => {
       throw new Error("An account with this email already exists.");
     }
 
+    const passwordHash = await hashPassword(password);
+
     // Store account registration
     const account = {
       name,
       email,
       phone: phone || "",
+      passwordHash,
       createdAt: Date.now()
     };
     _write(AUTH_KEY, account);
@@ -86,6 +106,11 @@ const Auth = (() => {
     const account = _read(AUTH_KEY);
     if (!account || account.email !== email) {
       throw new Error("No account found with this email. Please sign up first.");
+    }
+
+    const passwordHash = await hashPassword(password);
+    if (account.passwordHash !== passwordHash) {
+      throw new Error("Incorrect password. Please try again.");
     }
 
     // Create session
