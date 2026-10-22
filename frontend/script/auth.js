@@ -1,26 +1,12 @@
 /* ============================================================
-   auth.js — Authentication service (localStorage-backed)
-   Designed for easy swap to REST API later.
-
-   Storage keys:
-     closetlyAuth    — account registration (name, email, phone,
-                       passwordHash — SHA-256 hex digest, never the
-                       plaintext password)
-                       Persists across logouts. Cleared only on
-                       account deletion.
-     closetlySession — session state (isAuthenticated)
-                       Cleared on logout.
-     closetlyUser    — profile data
-                       Persists across logouts.
+   auth.js — Authentication Service (API-backed)
+   Communicates with Express.js backend
    ============================================================ */
 
 const Auth = (() => {
-  const AUTH_KEY  = "closetlyAuth";    // account registration
-  const SESS_KEY  = "closetlySession"; // login session
-  const USER_KEY  = "closetlyUser";    // profile data
+  const USER_KEY = "closetlyUser";
 
-  /* ---------- helpers ---------- */
-
+  /* ---------- Helpers ---------- */
   function _read(key) {
     try { return JSON.parse(localStorage.getItem(key)); }
     catch { return null; }
@@ -30,127 +16,95 @@ const Auth = (() => {
     localStorage.setItem(key, JSON.stringify(data));
   }
 
-  /**
-   * SHA-256 hash of a password, hex-encoded.
-   * Uses the Web Crypto API (crypto.subtle) — never store or compare
-   * plaintext passwords.
-   */
-  async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray
-      .map(byte => byte.toString(16).padStart(2, "0"))
-      .join("");
-  }
-
-  /* ---------- public API ---------- */
-
+  /* ---------- Public API ---------- */
   function getAccount() {
-    return _read(AUTH_KEY);
+    // For backward compatibility - returns user info from API token
+    const user = getProfile();
+    const token = Api.getAccessToken();
+    if (!token || !user) return null;
+
+    // Decode token to get email
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return {
+        email: payload.email,
+        name: user.name,
+        phone: user.phone || "",
+      };
+    } catch {
+      return null;
+    }
   }
 
   function getSession() {
-    return _read(SESS_KEY);
+    const token = Api.getAccessToken();
+    return token && !Api.ApiError ? { isAuthenticated: true } : null;
   }
 
   function isLoggedIn() {
-    const s = getSession();
-    return !!(s && s.isAuthenticated);
+    return Api.auth.isLoggedIn();
   }
 
   function isProfileComplete() {
-    const u = _read(USER_KEY);
-    return !!(u && u.name);
+    const user = getProfile();
+    return !!(user && user.name);
   }
 
   function getProfile() {
     return _read(USER_KEY) || {};
   }
 
-  /**
-   * Simulated sign-up.
-   * In the future this would POST /api/auth/signup
-   */
   async function signUp({ name, email, password, phone }) {
-    const existing = _read(AUTH_KEY);
-    if (existing && existing.email === email) {
-      throw new Error("An account with this email already exists.");
-    }
-
-    const passwordHash = await hashPassword(password);
-
-    // Store account registration
-    const account = {
-      name,
-      email,
-      phone: phone || "",
-      passwordHash,
-      createdAt: Date.now()
-    };
-    _write(AUTH_KEY, account);
-
-    // Create session
-    const session = { email, isAuthenticated: true };
-    _write(SESS_KEY, session);
-
-    return session;
+    const data = await Api.auth.signup({ name, email, password, phone });
+    _write(USER_KEY, data.user);
+    return { email: data.user.email, isAuthenticated: true };
   }
 
-  /**
-   * Simulated login.
-   * In the future this would POST /api/auth/login
-   */
   async function logIn({ email, password }) {
-    const account = _read(AUTH_KEY);
-    if (!account || account.email !== email) {
-      throw new Error("No account found with this email. Please sign up first.");
-    }
-
-    const passwordHash = await hashPassword(password);
-    if (account.passwordHash !== passwordHash) {
-      throw new Error("Incorrect password. Please try again.");
-    }
-
-    // Create session
-    const session = { email, isAuthenticated: true };
-    _write(SESS_KEY, session);
-
-    return session;
+    const data = await Api.auth.login({ email, password });
+    _write(USER_KEY, data.user);
+    return { email: data.user.email, isAuthenticated: true };
   }
 
-  /**
-   * Save profile data.
-   * In the future this would PUT /api/profile
-   */
-  function saveProfile(data) {
+  async function saveProfile(data) {
     const existing = getProfile();
     const merged = { ...existing, ...data };
+    
+    // If we have a token, sync with backend
+    if (Api.auth.isLoggedIn()) {
+      try {
+        const updated = await Api.auth.updateProfile(data);
+        _write(USER_KEY, updated);
+        return updated;
+      } catch (error) {
+        console.warn("Failed to sync profile with backend:", error);
+        // Fallback to local storage
+        _write(USER_KEY, merged);
+        return merged;
+      }
+    }
+    
     _write(USER_KEY, merged);
     return merged;
   }
 
-  /**
-   * Update avatar initial based on profile or account name.
-   */
   function getInitial() {
-    const p = getProfile();
-    const a = _read(AUTH_KEY);
-    const name = (p && p.name) || (a && a.name) || "";
+    const profile = getProfile();
+    const account = getAccount();
+    const name = (profile && profile.name) || (account && account.name) || "";
     return name.charAt(0).toUpperCase() || "U";
   }
 
-  /**
-   * Logout — clear session only. Account and profile persist.
-   */
-  function logOut() {
-    localStorage.removeItem(SESS_KEY);
+  async function logOut() {
+    try {
+      await Api.auth.logout();
+    } catch (error) {
+      console.warn("Logout API call failed:", error);
+    }
+    localStorage.removeItem(USER_KEY);
+    Api.clearTokens();
   }
 
-  /**
-   * Protect a page — redirect to login if not authenticated.
-   */
   function requireAuth() {
     if (!isLoggedIn()) {
       window.location.href = "login.html";
@@ -159,9 +113,6 @@ const Auth = (() => {
     return true;
   }
 
-  /**
-   * Redirect to profile setup if profile is incomplete.
-   */
   function requireProfile() {
     if (!isLoggedIn()) {
       window.location.href = "login.html";
@@ -172,6 +123,20 @@ const Auth = (() => {
       return false;
     }
     return true;
+  }
+
+  // Initialize profile from backend on load
+  async function initProfile() {
+    if (Api.auth.isLoggedIn()) {
+      try {
+        const user = await Api.auth.getMe();
+        _write(USER_KEY, user);
+        return user;
+      } catch (error) {
+        console.warn("Failed to fetch profile:", error);
+      }
+    }
+    return getProfile();
   }
 
   return {
@@ -186,6 +151,7 @@ const Auth = (() => {
     saveProfile,
     logOut,
     requireAuth,
-    requireProfile
+    requireProfile,
+    initProfile,
   };
 })();

@@ -71,6 +71,7 @@
     </div>
   </div>
 
+  <script src="../script/api.js"></script>
   <script src="../script/auth.js"></script>
   <script>
     /* Redirect if already logged in */
@@ -135,11 +136,22 @@
 
       try {
         await Auth.logIn({ email, password });
-        await Auth.logIn({ email, password });
         window.location.href = "../index.html";
       } catch (err) {
-        errText.textContent = err.message;
-        errBanner.classList.add("visible");
+        // Handle backend validation errors
+        if (err.errors && Array.isArray(err.errors)) {
+          err.errors.forEach(e => {
+            const fieldMap = {
+              'email': 'loginEmailErr',
+              'password': 'loginPassErr'
+            };
+            const fieldId = fieldMap[e.field];
+            if (fieldId) showFieldError(fieldId, e.message);
+          });
+        } else {
+          errText.textContent = err.message;
+          errBanner.classList.add("visible");
+        }
         btn.disabled = false;
         btn.textContent = "Log In";
       }

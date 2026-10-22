@@ -1,8 +1,8 @@
 """
-Closetly Microservice — LLM service (Qwen 3.6 27B via Groq).
+Closetly Microservice — LLM service (Llama 3.2 Vision via Groq).
 
 Provides image classification and description using the OpenAI-compatible
-Groq API with the qwen/qwen3.6-27b vision model.
+Groq API with the llama-3.2-11b-vision-preview vision model.
 """
 
 import base64
@@ -39,8 +39,7 @@ CATEGORY_DESCRIPTIONS = """
 8. Activewear — gym/athletic wear, sports clothing
 """.strip()
 
-MODEL = "qwen/qwen3.6-27b"
-
+MODEL = "qwen/qwen3.8-27b"
 
 def _get_client() -> OpenAI:
     """Create an OpenAI-compatible client pointed at Groq."""
@@ -119,7 +118,7 @@ def classify_image(image_bytes: bytes, media_type: str = "image/jpeg") -> dict:
                 ],
             },
         ],
-        reasoning_effort="none",
+        reasoning_effort="low",
         temperature=0.2,
         max_tokens=1024,
     )
@@ -195,7 +194,7 @@ def describe_image(image_bytes: bytes, media_type: str = "image/jpeg") -> str:
                 ],
             },
         ],
-        reasoning_effort="none",
+        reasoning_effort="low",
         temperature=0.2,
         max_tokens=1024,
     )

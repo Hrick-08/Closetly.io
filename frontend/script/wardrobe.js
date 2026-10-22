@@ -1,31 +1,28 @@
 /* ============================================================
-   wardrobe.js — Wardrobe page
-
+   wardrobe.js — Wardrobe Page (API-backed)
+   
    Flow:
-     pick image → POST {ML_SERVICE_URL}/classify  (existing API)
-                → { category, confidence, reasoning }
-                → confirm details (category prefilled) → save to localStorage
-
-  Storage: closetlyWardrobe_<email>   (per logged-in user)
-  Each item: { id, image, name, category, createdAt }
+     pick image → POST /api/microservice/classify → { category, confidence, reasoning }
+                 → confirm details (category prefilled) → save to MongoDB via /api/wardrobe/items
+   
+   Storage: MongoDB (per logged-in user)
+   Each item: { id, image, name, category, createdAt, ... }
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
-
+document.addEventListener("DOMContentLoaded", async () => {
   /* Only run on the Wardrobe page */
   if (!document.getElementById("addItemBtn")) return;
 
-  /* ---------- Auth guard (wardrobe belongs to a user) ---------- */
-  if (typeof Auth === "undefined" || !Auth.isLoggedIn()) {
+  /* ---------- Auth guard ---------- */
+  await Auth.initProfile();
+  if (!Auth.isLoggedIn()) {
     window.location.href = "login.html";
     return;
   }
 
   /* ---------- Config ---------- */
-  const ML_SERVICE_URL = "http://localhost:8000";
   const MAX_FILE_MB = 8;
   const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  const STORE_PREFIX = "closetlyWardrobe_";
 
   /* ---------- Centralized taxonomy (8 categories) ---------- */
   const TAXONOMY = {
@@ -44,23 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
       "Sports Jackets", "Other Athletic Wear"
     ]
   };
-
-  /* ---------- User-specific storage ---------- */
-  function storageKey() {
-    const account = Auth.getAccount() || {};
-    const profile = Auth.getProfile() || {};
-    const email = account.email || profile.email || "guest";
-    return STORE_PREFIX + email.toLowerCase();
-  }
-
-  function loadItems() {
-    try { return JSON.parse(localStorage.getItem(storageKey())) || []; }
-    catch { return []; }
-  }
-
-  function saveItems(items) {
-    localStorage.setItem(storageKey(), JSON.stringify(items));
-  }
 
   /* ---------- DOM refs ---------- */
   const els = {
@@ -112,12 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingText: document.getElementById("wbLoadingText")
   };
 
-  let selectedFile = null;   // File being added
-  let editingId = null;      // item id when in Edit mode
+  let selectedFile = null;
+  let editingId = null;
   let activeCategory = "";
   let activeItemId = null;
   let addDefaultCategory = "";
-  let items = loadItems();
+  let items = [];
 
   /* ============================================================
      Rendering
@@ -214,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     categoryItems.slice(0, 4).forEach((item) => {
       const img = document.createElement("img");
-      img.src = item.image || placeholderSvg();
+      img.src = item.imageBase64 || item.image || placeholderSvg();
       img.alt = item.name || "Wardrobe item";
       img.loading = "lazy";
       collage.appendChild(img);
@@ -253,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const img = document.createElement("img");
     img.alt = item.name;
     img.loading = "lazy";
-    img.src = item.image || placeholderSvg();
+    img.src = item.imageBase64 || item.image || placeholderSvg();
     imgWrap.appendChild(img);
 
     const body = document.createElement("div");
@@ -316,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!item) return;
 
     activeItemId = item.id;
-    els.itemDetailImg.src = item.image || placeholderSvg();
+    els.itemDetailImg.src = item.imageBase64 || item.image || placeholderSvg();
     els.itemDetailName.textContent = item.name || "Untitled item";
     els.itemDetailCategory.textContent = item.category || "-";
     els.itemDetailAdded.textContent = formatDate(item.createdAt);
@@ -362,6 +342,38 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================================================
+     Load items from API
+     ============================================================ */
+  async function loadItems() {
+    try {
+      const data = await Api.wardrobe.getItems({ limit: 200 });
+      items = data.items.map(item => ({
+        ...item,
+        id: item._id || item.id,
+        image: item.imageBase64,
+      }));
+      render();
+      updateFilterCategories(data.categories || []);
+    } catch (err) {
+      console.error("Failed to load items:", err);
+      showAlert("Failed to load wardrobe items. Please try again.");
+      items = [];
+      render();
+    }
+  }
+
+  function updateFilterCategories(categories) {
+    const currentValue = els.filter.value;
+    els.filter.innerHTML = '<option value="">All Categories</option>';
+    [...new Set([...Object.keys(TAXONOMY), ...categories])].forEach((cat) => {
+      if (TAXONOMY[cat] || categories.includes(cat)) {
+        els.filter.add(new Option(cat, cat));
+      }
+    });
+    els.filter.value = currentValue;
+  }
+
+  /* ============================================================
      Add-item modal — step 1: choose & validate image
      ============================================================ */
   function openAddModal(defaultCategory = "", openManual = false) {
@@ -387,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editingId = itemId;
     clearFile();
     clearModalError();
-    els.thumbImg.src = item.image || placeholderSvg();
+    els.thumbImg.src = item.imageBase64 || item.image || placeholderSvg();
 
     els.itemName.value = item.name || "";
     fillCategorySelect(item.category);
@@ -395,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
     els.thumbImg.style.cursor = "default";
     els.classifyNote.style.cursor = "default";
 
-    els.backBtn.style.display = "none"; // nothing to go back to in edit mode
+    els.backBtn.style.display = "none";
     els.saveBtn.innerHTML = `<i class="bi bi-check-lg"></i> Save Changes`;
 
     showStep(2);
@@ -404,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function closeModal() {
-    if (els.loading.style.display === "grid") return; // don't close mid-analyze
+    if (els.loading.style.display === "grid") return;
     els.overlay.style.display = "none";
     if (els.categoryOverlay.style.display !== "grid" && els.itemOverlay.style.display !== "grid") {
       document.body.style.overflow = "";
@@ -461,7 +473,6 @@ document.addEventListener("DOMContentLoaded", () => {
       els.removeBtn.style.display = "";
       els.analyzeBtn.disabled = false;
 
-      /* If user is in details step (manual mode/edit path), reflect upload there too. */
       if (els.step2.style.display !== "none") {
         els.thumbImg.src = ev.target.result;
       }
@@ -490,8 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
     els.thumbImg.src = placeholderSvg();
     els.itemName.value = "";
     fillCategorySelect(defaultCategory || addDefaultCategory || "");
-    els.classifyNote.textContent =
-      "Manual mode: Click here to upload an image";
+    els.classifyNote.textContent = "Manual mode: Click here to upload an image";
     els.classifyNote.hidden = false;
     els.thumbImg.style.cursor = "pointer";
     els.classifyNote.style.cursor = "pointer";
@@ -552,46 +562,30 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("drop", (e) => e.preventDefault());
 
   /* ============================================================
-     Step 1 → Analyze → existing POST /classify endpoint
+     Step 1 → Analyze → POST /api/microservice/classify
      ============================================================ */
   els.analyzeBtn.addEventListener("click", async () => {
     if (!selectedFile) return;
 
-    const formData = new FormData();
-    formData.append("image", selectedFile);   // field name required by the API
-
     setLoading(true, "Analyzing your item...");
     try {
-      const res = await fetch(`${ML_SERVICE_URL}/classify`, {
-        method: "POST",
-        body: formData
-      });
-
-      if (!res.ok) {
-        let detail = "";
-        try { detail = (await res.json()).detail || ""; } catch { }
-        throw new Error(detail || `Request failed (${res.status})`);
-      }
-
-      const result = await res.json();
+      const result = await Api.microservice.classifyImage(selectedFile);
       prepareDetailsStep(result);
-
     } catch (err) {
       const msg = err && err.message ? err.message : "";
-      if (/Failed to fetch|NetworkError|load failed/i.test(msg)) {
+      if (err.status === 503 || /network|fetch/i.test(msg)) {
         showModalError("Couldn't analyze your item right now. Please try again.");
-      } else if (msg.includes("GROQ_API_KEY")) {
+      } else if (msg.includes("GROQ_API_KEY") || msg.includes("not configured")) {
         showModalError("Classifier is not configured on the server yet.");
       } else {
         showModalError("Couldn't analyze your item right now. Please try again.");
       }
-      showModalTop(); // keep step 1 visible so the error shows in the modal
+      showModalTop();
     } finally {
       setLoading(false);
     }
   });
 
-  /* Bring the error into view even though page didn't scroll */
   function showModalTop() {
     const modal = document.querySelector(".wb-modal");
     if (modal) modal.scrollTop = 0;
@@ -607,41 +601,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================================================
-     Step 2 — confirm/edit details, then persist
+     Step 2 — confirm/edit details, then persist to MongoDB
      ============================================================ */
   function prepareDetailsStep(result) {
-    /* Map classifier output ("Tops", "Bottoms", …) to our taxonomy.
-       The existing API already validates against the same 8 groups,
-       so we do a tolerant match for safety only. */
-    const detected = mapCategory(result ? result.category : "");
-    const confidence = result ? String(result.confidence || "").toLowerCase() : "";
+    const detected = mapCategory(result?.category || "");
+    const confidence = String(result?.confidence || "").toLowerCase();
 
     fillCategorySelect(detected);
-
     els.thumbImg.src = els.previewImg.src;
 
-    /* Default name from filename without extension */
     const base = selectedFile ? selectedFile.name.replace(/\.[^.]+$/, "") : "";
     els.itemName.value = base.charAt(0).toUpperCase() + base.slice(1);
 
     if (!detected) {
-      els.classifyNote.textContent =
-        "We couldn't confidently identify this item. Please choose the category manually.";
+      els.classifyNote.textContent = "We couldn't confidently identify this item. Please choose the category manually.";
       els.classifyNote.hidden = false;
     } else if (confidence === "low") {
-      els.classifyNote.textContent =
-        `Detected as "${detected}" with low confidence — please double-check below.`;
+      els.classifyNote.textContent = `Detected as "${detected}" with low confidence — please double-check below.`;
       els.classifyNote.hidden = false;
     } else {
-      els.classifyNote.textContent =
-        `Looks like ${detected}. Adjust anything that's wrong.`;
+      els.classifyNote.textContent = `Looks like ${detected}. Adjust anything that's wrong.`;
       els.classifyNote.hidden = false;
     }
 
     els.thumbImg.style.cursor = "default";
     els.classifyNote.style.cursor = "default";
-
-    els.backBtn.style.display = "";   // allow changing the image
+    els.backBtn.style.display = "";
     showStep(2);
     showModalTop();
   }
@@ -668,51 +653,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   els.backBtn.addEventListener("click", () => showStep(1));
 
-  els.saveBtn.addEventListener("click", () => {
+  els.saveBtn.addEventListener("click", async () => {
     const name = els.itemName.value.trim();
     const category = els.categorySelect.value;
 
     if (!name) { els.itemName.focus(); return; }
     if (!category) { els.categorySelect.focus(); return; }
 
-    if (editingId) {
-      /* Reclassify / rename existing item */
-      const item = items.find((i) => i.id === editingId);
-      if (item) {
-        item.name = name;
-        item.category = category;
-        saveItems(items);
+    setLoading(true, editingId ? "Saving changes..." : "Adding to wardrobe...");
+    try {
+      if (editingId) {
+        const updated = await Api.wardrobe.updateItem(editingId, { name, category });
+        const idx = items.findIndex(i => i.id === editingId);
+        if (idx !== -1) items[idx] = { ...items[idx], ...updated, id: editingId };
+      } else {
+        let imageBase64 = "";
+        if (selectedFile) {
+          imageBase64 = await downscaleImage();
+        }
+        
+        const created = await Api.wardrobe.createItemWithImage(selectedFile, {
+          name,
+          category,
+        });
+        
+        items.unshift({
+          ...created,
+          id: created._id || created.id,
+          image: created.imageBase64,
+        });
       }
-    } else {
-      const item = {
-        id: generateId(),
-        image: selectedFile ? downscaleImage() : "",
-        name: name,
-        category: category,
-        createdAt: new Date().toISOString()
-      };
-      items.push(item);
-      try {
-        saveItems(items);
-      } catch (e) {
-        showAlert("Storage is full — could not save this item.", "error");
-        items.pop();
-        return;
-      }
-    }
 
-    closeModal();
-    render();
+      closeModal();
+      render();
+      showAlert(editingId ? "Item updated successfully!" : "Item added to wardrobe!", "success");
+    } catch (err) {
+      console.error("Save failed:", err);
+      showModalError(err.message || "Failed to save item. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   });
 
-  function generateId() {
-    return (crypto.randomUUID)
-      ? crypto.randomUUID()
-      : `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-
-  /* Shrink stored images so localStorage doesn't overflow.
-     Reads dimensions from the already-loaded preview <img>. */
   function downscaleImage() {
     const MAX_DIM = 800;
     const el = els.previewImg;
@@ -733,13 +715,19 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================================================
      Delete
      ============================================================ */
-  function deleteItem(itemId) {
+  async function deleteItem(itemId) {
     if (!confirm("Remove this item from your wardrobe?")) return;
-    items = items.filter((i) => i.id !== itemId);
-    saveItems(items);
-    closeItemPopup();
-    if (activeCategory) openCategoryPopup(activeCategory);
-    render();
+    try {
+      await Api.wardrobe.deleteItem(itemId);
+      items = items.filter((i) => i.id !== itemId);
+      closeItemPopup();
+      if (activeCategory) openCategoryPopup(activeCategory);
+      render();
+      showAlert("Item removed from wardrobe", "success");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      showAlert("Failed to delete item. Please try again.", "error");
+    }
   }
 
   els.categoryClose.addEventListener("click", closeCategoryPopup);
@@ -771,11 +759,10 @@ document.addEventListener("DOMContentLoaded", () => {
   els.filter.innerHTML = '<option value="">All Categories</option>';
   Object.keys(TAXONOMY).forEach((cat) => els.filter.add(new Option(cat, cat)));
 
-  /* Preselect category when arriving via a deep link (?category=...) */
   const urlCategory = new URLSearchParams(window.location.search).get("category");
   if (urlCategory && Object.prototype.hasOwnProperty.call(TAXONOMY, urlCategory)) {
     els.filter.value = urlCategory;
   }
 
-  render();
+  await loadItems();
 });

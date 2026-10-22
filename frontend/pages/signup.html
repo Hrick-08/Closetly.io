@@ -56,6 +56,7 @@
             <i class="bi bi-telephone field-icon"></i>
             <input type="tel" id="suPhone" placeholder="+91 98765 43210" autocomplete="tel" />
           </div>
+          <div class="auth-error-msg" id="suPhoneErr"></div>
         </div>
 
         <div class="form-group">
@@ -94,6 +95,7 @@
     </div>
   </div>
 
+  <script src="../script/api.js"></script>
   <script src="../script/auth.js"></script>
   <script>
     if (Auth.isLoggedIn()) {
@@ -129,7 +131,7 @@
       if (input) input.classList.remove("has-error");
     }
     function clearAllErrors() {
-      ["suNameErr", "suEmailErr", "suPassErr", "suConfirmErr"].forEach(clearFieldError);
+      ["suNameErr", "suEmailErr", "suPhoneErr", "suPassErr", "suConfirmErr"].forEach(clearFieldError);
       errBanner.classList.remove("visible");
     }
 
@@ -158,8 +160,11 @@
       } else if (!/\d/.test(password)) {
         showFieldError("suPassErr", "Password must contain at least 1 number.");
         valid = false;
-      } else if (!/[^A-Za-z0-9]/.test(password)) {
-        showFieldError("suPassErr", "Password must contain at least 1 special character.");
+      } else if (!/[a-z]/.test(password)) {
+        showFieldError("suPassErr", "Password must contain at least 1 lowercase letter.");
+        valid = false;
+      } else if (!/[A-Z]/.test(password)) {
+        showFieldError("suPassErr", "Password must contain at least 1 uppercase letter.");
         valid = false;
       }
       if (password !== confirm) {
@@ -176,8 +181,22 @@
         await Auth.signUp({ name, email, password, phone });
         window.location.href = "profile.html";
       } catch (err) {
-        errText.textContent = err.message;
-        errBanner.classList.add("visible");
+        // Handle backend validation errors
+        if (err.errors && Array.isArray(err.errors)) {
+          err.errors.forEach(e => {
+            const fieldMap = {
+              'name': 'suNameErr',
+              'email': 'suEmailErr',
+              'password': 'suPassErr',
+              'phone': 'suPhoneErr'
+            };
+            const fieldId = fieldMap[e.field];
+            if (fieldId) showFieldError(fieldId, e.message);
+          });
+        } else {
+          errText.textContent = err.message;
+          errBanner.classList.add("visible");
+        }
         btn.disabled = false;
         btn.textContent = "Create Account";
       }
