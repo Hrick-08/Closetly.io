@@ -171,12 +171,16 @@
 
   </div>
 
+  <!-- Shared AI assistant (injected by script/assistant.js) -->
+  <div id="aiAssistantMount"></div>
+
   <!-- Shared site footer (injected by script/footer.js) -->
   <div id="siteFooter"></div>
 
   <script src="../script/api.js"></script>
   <script src="../script/auth.js"></script>
   <script src="../script/footer.js"></script>
+  <script src="../script/assistant.js"></script>
   <script>
     /* ---- Auth guard ---- */
     if (typeof Auth === "undefined" || !Auth.isLoggedIn()) {

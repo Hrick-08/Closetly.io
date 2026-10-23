@@ -95,8 +95,12 @@
     </div>
   </div>
 
+  <!-- Shared AI assistant (injected by script/assistant.js) -->
+  <div id="aiAssistantMount"></div>
+
   <script src="../script/api.js"></script>
   <script src="../script/auth.js"></script>
+  <script src="../script/assistant.js"></script>
   <script>
     if (Auth.isLoggedIn()) {
       window.location.href = Auth.isProfileComplete() ? "../index.html" : "profile.html";

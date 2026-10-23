@@ -3,6 +3,27 @@
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
+  const mount = document.getElementById("aiAssistantMount");
+  if (!mount) return;
+
+  const IN_PAGES_DIR = window.location.pathname.toLowerCase().includes("/pages/");
+  const rootPath = IN_PAGES_DIR ? "../" : "";
+
+  fetch(rootPath + "components/assistant.html")
+    .then((res) => {
+      if (!res.ok) throw new Error("Assistant could not be loaded");
+      return res.text();
+    })
+    .then((html) => {
+      mount.innerHTML = html;
+      initAssistant();
+    })
+    .catch((error) => {
+      console.error("AI Assistant could not be loaded:", error);
+    });
+});
+
+function initAssistant() {
 
   const aiToggle = document.getElementById("aiAssistantToggle");
   const aiChatbox = document.getElementById("aiChatbox");
@@ -280,4 +301,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
-});
+}
