@@ -5,10 +5,159 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const authGate = document.getElementById("authGate");
   const profileDropdownWrap = document.querySelector(".profile-dropdown-wrap");
+  const recentlyAddedStatus = document.getElementById("recentlyAddedStatus");
+  const recentlyAddedGrid = document.getElementById("recentlyAddedGrid");
 
   /* ---------- Helpers ---------- */
   function isLoggedIn() {
     return typeof Auth !== "undefined" && Auth.isLoggedIn();
+  }
+
+  function createRecentItemCard(item) {
+    const card = document.createElement("a");
+    card.className = "recently-added-card";
+    card.href = `pages/wardrobe.html?item=${encodeURIComponent(item._id || item.id || "")}`;
+    card.setAttribute("aria-label", `Open ${item.name || "wardrobe item"} details`);
+
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "recently-added-image-wrap";
+    const imageSource = item.imageBase64 || item.imageUrl || item.image;
+    if (typeof imageSource === "string" && imageSource) {
+      const image = document.createElement("img");
+      image.alt = item.name ? `${item.name} clothing item` : "Wardrobe item";
+      image.loading = "lazy";
+      if (/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(imageSource)) {
+        image.src = imageSource;
+      } else {
+        try {
+          const parsed = new URL(imageSource, window.location.href);
+          if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+            image.src = parsed.href;
+          }
+        } catch {
+          image.removeAttribute("src");
+        }
+      }
+      if (image.hasAttribute("src")) {
+        imageWrap.appendChild(image);
+      } else {
+        imageWrap.appendChild(createImagePlaceholder());
+      }
+    } else {
+      imageWrap.appendChild(createImagePlaceholder());
+    }
+
+    const details = document.createElement("div");
+    details.className = "recently-added-details";
+    const name = document.createElement("h3");
+    name.textContent = item.name || "Untitled item";
+    const category = document.createElement("p");
+    category.textContent = item.category || "Uncategorized";
+    details.append(name, category);
+    card.append(imageWrap, details);
+    return card;
+  }
+
+  function createImagePlaceholder() {
+    const placeholder = document.createElement("div");
+    placeholder.className = "recently-added-image-placeholder";
+    placeholder.setAttribute("aria-label", "No image available");
+    const icon = document.createElement("i");
+    icon.className = "bi bi-image";
+    icon.setAttribute("aria-hidden", "true");
+    placeholder.appendChild(icon);
+    return placeholder;
+  }
+
+  function createAddItemCard() {
+    const link = document.createElement("a");
+    link.className = "recently-added-card recently-added-add-card";
+    link.href = "pages/wardrobe.html?add=true";
+    link.setAttribute("aria-label", "Add a new wardrobe item");
+
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "recently-added-image-wrap recently-added-add-image";
+    const icon = document.createElement("i");
+    icon.className = "bi bi-plus-lg";
+    icon.setAttribute("aria-hidden", "true");
+    imageWrap.appendChild(icon);
+
+    const details = document.createElement("div");
+    details.className = "recently-added-details";
+    const name = document.createElement("h3");
+    name.textContent = "Add New Item";
+    const category = document.createElement("p");
+    category.textContent = "Add a piece to your closet";
+    details.append(name, category);
+    link.append(imageWrap, details);
+    return link;
+  }
+
+  let recentlyAddedRequest = null;
+
+  function showRecentlyAddedMessage(message, { showSignIn = false, showRetry = false } = {}) {
+    recentlyAddedStatus.replaceChildren();
+    const text = document.createElement("span");
+    text.textContent = message;
+    recentlyAddedStatus.appendChild(text);
+
+    if (showSignIn) {
+      const signIn = document.createElement("a");
+      signIn.href = "pages/login.html";
+      signIn.textContent = "Sign in";
+      recentlyAddedStatus.append(" ", signIn, " to view your wardrobe.");
+    }
+    if (showRetry) {
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.className = "recently-added-retry";
+      retry.textContent = "Try again";
+      retry.addEventListener("click", loadRecentlyAdded);
+      recentlyAddedStatus.append(" ", retry);
+    }
+    recentlyAddedStatus.hidden = false;
+    recentlyAddedGrid.hidden = true;
+  }
+
+  function loadRecentlyAdded() {
+    if (recentlyAddedRequest) return recentlyAddedRequest;
+    if (!recentlyAddedGrid || !recentlyAddedStatus) return Promise.resolve();
+
+    if (!isLoggedIn()) {
+      showRecentlyAddedMessage("Sign in to see your recently added items.", { showSignIn: true });
+      return Promise.resolve();
+    }
+
+    recentlyAddedStatus.textContent = "Loading your wardrobe...";
+    recentlyAddedStatus.hidden = false;
+    recentlyAddedGrid.hidden = true;
+
+    recentlyAddedRequest = Api.wardrobe.getItems({
+      limit: 4,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    }).then((data) => {
+      const items = Array.isArray(data?.items) ? data.items : [];
+      recentlyAddedGrid.replaceChildren();
+      items.slice(0, 4).forEach((item) => {
+        recentlyAddedGrid.appendChild(createRecentItemCard(item));
+      });
+      recentlyAddedGrid.appendChild(createAddItemCard());
+
+      if (!items.length) {
+        recentlyAddedStatus.textContent = "Your wardrobe is empty. Add your first item to get started.";
+        recentlyAddedStatus.hidden = false;
+      } else {
+        recentlyAddedStatus.hidden = true;
+      }
+      recentlyAddedGrid.hidden = false;
+    }).catch((error) => {
+      console.error("Failed to load recently added wardrobe items:", error);
+      showRecentlyAddedMessage("We couldn't load your wardrobe right now.", { showRetry: true });
+      recentlyAddedRequest = null;
+    });
+
+    return recentlyAddedRequest;
   }
 
   function closeDropdown() {
@@ -89,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Start on Home — always visible, no auth required */
   showPage("home");
+  loadRecentlyAdded();
 
   /* ---------- Profile dropdown toggle ---------- */
   const profileToggle = document.getElementById("profileToggle");

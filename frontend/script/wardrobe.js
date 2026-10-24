@@ -769,4 +769,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   await loadItems();
+  const queryParams = new URLSearchParams(window.location.search);
+  const itemId = queryParams.get("item");
+  if (itemId) {
+    openItemPopup(itemId);
+  } else if (queryParams.get("add") === "true") {
+    openAddModal();
+  }
 });
