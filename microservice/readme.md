@@ -42,7 +42,7 @@ unreachable, `/chat` returns HTTP 503 instead of an unhandled server error.
 | `GROQ_API_KEY` | Groq key (vision model) — https://console.groq.com/keys |
 | `CORS_ORIGINS` | Optional JSON list of allowed origins |
 | `MONGODB_URI` | MongoDB connection string used for personal wardrobe retrieval |
-| `MONGODB_DATABASE` | MongoDB database name (currently `test` for local development) |
+| `MONGODB_DATABASE` | MongoDB database name (default: `test`, matching the backend URI) |
 | `OPENAI_API_KEY` | Optional key for `text-embedding-3-small` wardrobe embeddings |
 | `EMBEDDING_MODEL` | Embedding model (default: `text-embedding-3-small`) |
 

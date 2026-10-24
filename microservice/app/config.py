@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     assistant_model: str = "openai/gpt-oss-120b"
     mongodb_uri: str = ""
-    mongodb_database: str = "closetly"
+    # The backend's Atlas URI does not include a database path, so MongoDB
+    # uses its default database name: "test".
+    mongodb_database: str = "test"
     openai_api_key: str = ""
     embedding_model: str = "text-embedding-3-small"
     embedding_dimensions: int = 1536
