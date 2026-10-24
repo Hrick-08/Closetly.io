@@ -79,7 +79,7 @@ MongoDB Atlas Vector Search index for `wardrobeitems`:
 
 The dimension is for `text-embedding-3-small`. If the model changes, update
 `EMBEDDING_DIMENSIONS`, recreate the index, and rerun
-`python -m scripts.embed_wardrobe`.
+`python -m app.embed_wardrobe`.
 
 ### POST /search
 

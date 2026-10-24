@@ -54,7 +54,7 @@ def main() -> None:
             dimensions=settings.embedding_dimensions,
         )
         collection.update_one(
-            {"_id": item["_id"]},
+            {"_id": source["_id"]},
             {"$set": {"embedding": response.data[0].embedding}},
         )
 
