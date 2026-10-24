@@ -1,6 +1,7 @@
 /**
  * Closetly Backend - Express.js Application Entry Point
  */
+
 require('dotenv').config();
 
 const express = require('express');
@@ -30,52 +31,149 @@ const app = express();
 // Trust proxy (for rate limiting behind reverse proxy)
 app.set('trust proxy', 1);
 
-// Security middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  contentSecurityPolicy: config.nodeEnv === 'production' ? undefined : false,
-}));
+// ============================================================
+// SECURITY MIDDLEWARE
+// ============================================================
 
-// CORS configuration
-app.use(cors({
-  origin: config.corsOrigin,
+app.use(
+  helmet({
+    crossOriginResourcePolicy: {
+      policy: 'cross-origin',
+    },
+    contentSecurityPolicy:
+      config.nodeEnv === 'production' ? undefined : false,
+  })
+);
+
+// ============================================================
+// CORS CONFIGURATION
+// ============================================================
+
+const allowedOrigins = [
+  // Production frontend
+  'https://closetly.hrick.in',
+
+  // Vercel backend itself
+  'https://closetly-io.vercel.app',
+
+  // Local development
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5500',
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no Origin header.
+    // This includes server-to-server requests, curl, Postman, etc.
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.warn(`CORS blocked origin: ${origin}`);
+
+    return callback(
+      new Error(`Origin ${origin} is not allowed by CORS`)
+    );
+  },
+
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-}));
 
-// Rate limiting
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+  ],
+
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+  ],
+
+  optionsSuccessStatus: 204,
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Explicitly handle preflight requests
+app.options('*', cors(corsOptions));
+
+// ============================================================
+// RATE LIMITING
+// ============================================================
+
 const limiter = rateLimit({
   windowMs: config.rateLimitWindowMs,
   max: config.rateLimitMaxRequests,
+
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later',
   },
+
   standardHeaders: true,
   legacyHeaders: false,
 });
+
 app.use('/api/', limiter);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// ============================================================
+// BODY PARSING
+// ============================================================
+
+app.use(
+  express.json({
+    limit: '10mb',
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10mb',
+  })
+);
+
 app.use(cookieParser());
 
-// Sanitize input
+// ============================================================
+// INPUT SANITIZATION
+// ============================================================
+
 app.use(sanitize);
 
-// Logging
+// ============================================================
+// LOGGING
+// ============================================================
+
 if (config.nodeEnv === 'development') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
 }
 
-// Static files (for uploads if needed)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// ============================================================
+// STATIC FILES
+// ============================================================
 
-// Health check endpoint
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, '../uploads'))
+);
+
+// ============================================================
+// HEALTH CHECK
+// ============================================================
+
 app.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -86,64 +184,90 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes
+// ============================================================
+// API ROUTES
+// ============================================================
+
 app.use('/api/auth', authRoutes);
+
 app.use('/api/wardrobe', wardrobeRoutes);
+
 app.use('/api/microservice', microserviceRoutes);
 
-// 404 handler
+// ============================================================
+// 404 HANDLER
+// ============================================================
+
 app.use(notFound);
 
-// Global error handler
+// ============================================================
+// GLOBAL ERROR HANDLER
+// ============================================================
+
 app.use(globalErrorHandler);
 
-// Handle unhandled promise rejections
+// ============================================================
+// PROCESS ERROR HANDLERS
+// ============================================================
+
 process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION! 💥 Shutting down...');
+  console.error('UNHANDLED REJECTION! Shutting down...');
   console.error(err.name, err.message);
+
   process.exit(1);
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
-  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+  console.error('UNCAUGHT EXCEPTION! Shutting down...');
   console.error(err.name, err.message);
+
   process.exit(1);
 });
 
-// Start server
+// ============================================================
+// START SERVER
+// ============================================================
+
 const PORT = config.port;
+
 const server = app.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║   🧥  Closetly Backend API                                ║
+║   Closetly Backend API                                    ║
 ║                                                           ║
 ║   Environment: ${config.nodeEnv.padEnd(38)} ║
 ║   Port: ${PORT.toString().padEnd(44)} ║
-║   MongoDB: ${config.mongodbUri.replace(/\/\/.*@/, '//****:****@').padEnd(41)} ║
+║   MongoDB: ${config.mongodbUri
+    .replace(/\/\/.*?:.*?@/, '//****:****@')
+    .padEnd(41)} ║
 ║   Microservice: ${config.microserviceUrl.padEnd(36)} ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
   `);
 });
 
-// Graceful shutdown
+// ============================================================
+// GRACEFUL SHUTDOWN
+// ============================================================
+
 const shutdown = async (signal) => {
   console.log(`\n${signal} received. Shutting down gracefully...`);
-  
+
   server.close(async () => {
     console.log('HTTP server closed.');
-    
+
     // Close MongoDB connection
     const mongoose = require('mongoose');
+
     await mongoose.connection.close();
+
     console.log('MongoDB connection closed.');
-    
     console.log('Graceful shutdown complete.');
+
     process.exit(0);
   });
-  
+
   // Force shutdown after 10 seconds
   setTimeout(() => {
     console.error('Forced shutdown after timeout');
@@ -153,5 +277,9 @@ const shutdown = async (signal) => {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+// ============================================================
+// EXPORT
+// ============================================================
 
 module.exports = app;
