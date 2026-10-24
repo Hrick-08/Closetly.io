@@ -183,7 +183,7 @@ exports.chat = catchAsync(async (req, res, next) => {
   try {
     const response = await microserviceClient.post('/chat', {
       message,
-      history,
+      history: Array.isArray(history) ? history.slice(-20) : [],
       preferences: req.user.preferences || {},
     }, {
       headers: {

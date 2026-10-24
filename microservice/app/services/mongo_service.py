@@ -78,6 +78,7 @@ def get_wardrobe_items(
         "wearCount": 1,
         "lastWorn": 1,
         "notes": 1,
+        "imageBase64": 1,
     }
     return list(
         _database().wardrobeitems.find(filters, projection)
@@ -116,6 +117,7 @@ def vector_search(
                 "wearCount": 1,
                 "lastWorn": 1,
                 "notes": 1,
+                "imageBase64": 1,
                 "retrievalScore": 1,
             }
         },

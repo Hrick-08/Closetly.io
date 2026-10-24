@@ -45,8 +45,24 @@ class ChatRequest(BaseModel):
     preferences: dict = Field(default_factory=dict)
 
 
+class OutfitItem(BaseModel):
+    itemId: str
+    role: str
+    name: str
+    category: str
+    imageUrl: str | None = None
+
+
+class Outfit(BaseModel):
+    name: str
+    items: list[OutfitItem]
+    reason: str = ""
+    stylingTips: list[str] = Field(default_factory=list)
+
+
 class ChatResponse(BaseModel):
     response: str
+    outfits: list[Outfit] = Field(default_factory=list)
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -71,7 +87,7 @@ async def chat(
             x_closetly_user_id,
             preferences,
         )
-        return ChatResponse(response=answer)
+        return ChatResponse(**answer)
     except ValueError as error:
         raise HTTPException(status_code=401, detail=str(error)) from error
     except PyMongoError as error:

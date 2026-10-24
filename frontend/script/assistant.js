@@ -54,7 +54,8 @@ function initAssistant() {
   function loadChatHistory() {
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      const history = stored ? JSON.parse(stored) : [];
+      return Array.isArray(history) ? history.slice(-20) : [];
     } catch (error) {
       console.error("Failed to load chat history:", error);
       return [];
@@ -63,6 +64,7 @@ function initAssistant() {
 
   function saveChatHistory() {
     try {
+      chatHistory = chatHistory.slice(-20);
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
     } catch (error) {
       console.error("Failed to save chat history:", error);
@@ -151,6 +153,104 @@ function initAssistant() {
     aiMessages.scrollTop = aiMessages.scrollHeight;
   }
 
+  function addAssistantResponse(data) {
+    const messageWrapper = document.createElement("div");
+    messageWrapper.className = "ai-message ai-message-bot";
+
+    const avatar = document.createElement("div");
+    avatar.className = "ai-message-avatar";
+    avatar.innerHTML = '<i class="bi bi-stars"></i>';
+
+    const content = document.createElement("div");
+    content.className = "ai-message-content ai-assistant-response";
+    const response = document.createElement("p");
+    response.className = "ai-response-text";
+    response.textContent = data.response || "";
+    content.appendChild(response);
+
+    (data.outfits || []).forEach((outfit) => {
+      const card = document.createElement("article");
+      card.className = "ai-outfit-card";
+
+      const title = document.createElement("h4");
+      title.textContent = outfit.name;
+      card.appendChild(title);
+
+      const items = document.createElement("div");
+      items.className = "ai-outfit-items";
+      (outfit.items || []).forEach((item) => {
+        const itemEl = document.createElement("div");
+        itemEl.className = "ai-outfit-item";
+
+        const image = document.createElement("img");
+        image.src = item.imageUrl || placeholderImage();
+        image.alt = item.name || "Wardrobe item";
+        image.onerror = () => {
+          image.src = placeholderImage();
+        };
+
+        const name = document.createElement("h5");
+        name.textContent = item.name;
+        const category = document.createElement("span");
+        category.textContent = item.category;
+
+        itemEl.append(image, name, category);
+        items.appendChild(itemEl);
+      });
+      card.appendChild(items);
+
+      if (outfit.reason) {
+        const reason = document.createElement("p");
+        reason.className = "ai-outfit-reason";
+        reason.textContent = outfit.reason;
+        card.appendChild(reason);
+      }
+
+      if (outfit.stylingTips?.length) {
+        const tipsTitle = document.createElement("strong");
+        tipsTitle.className = "ai-outfit-tips-title";
+        tipsTitle.textContent = "Stylist tip";
+        card.appendChild(tipsTitle);
+
+        const tips = document.createElement("ul");
+        tips.className = "ai-outfit-tips";
+        outfit.stylingTips.forEach((tip) => {
+          const tipEl = document.createElement("li");
+          tipEl.textContent = tip;
+          tips.appendChild(tipEl);
+        });
+        card.appendChild(tips);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "ai-outfit-actions";
+      ["View outfit", "Try another"].forEach((label) => {
+        const action = document.createElement("button");
+        action.type = "button";
+        action.textContent = label;
+        action.addEventListener("click", () => {
+          if (label === "Try another") {
+            aiInput.value = "Show me another outfit from my wardrobe.";
+            aiForm.requestSubmit();
+          }
+        });
+        actions.appendChild(action);
+      });
+      card.appendChild(actions);
+      content.appendChild(card);
+    });
+
+    messageWrapper.append(avatar, content);
+    aiMessages.appendChild(messageWrapper);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+
+  function placeholderImage() {
+    return "data:image/svg+xml;utf8," + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="100%" height="100%" fill="#f0ece5"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9a6037" font-family="sans-serif" font-size="14">No image</text></svg>'
+    );
+  }
+
 
   /* -----------------------------------------
      TYPING INDICATOR
@@ -197,14 +297,14 @@ function initAssistant() {
 
   async function generateAIResponse(userMessage) {
 
-    const data = await Api.microservice.chat(userMessage, chatHistory);
+    const data = await Api.microservice.chat(userMessage, chatHistory.slice(-20));
 
     // Keep the running conversation in sync for the next turn's context.
     chatHistory.push({ role: "user", content: userMessage });
     chatHistory.push({ role: "assistant", content: data.response });
     saveChatHistory();
 
-    return data.response;
+    return data;
   }
 
 
@@ -233,7 +333,7 @@ function initAssistant() {
 
       removeTyping();
 
-      addMessage(response, "bot");
+      addAssistantResponse(response);
 
     } catch (error) {
 
