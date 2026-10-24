@@ -194,7 +194,10 @@ const Api = (() => {
     },
 
     async logout() {
-      await request("/auth/logout", { method: "POST" });
+      await request("/auth/logout", {
+        method: "POST",
+        body: JSON.stringify({ refreshToken: getRefreshToken() }),
+      });
       clearTokens();
     },
 

@@ -217,8 +217,11 @@ exports.logout = catchAsync(async (req, res, next) => {
   
   if (refreshToken && req.user) {
     // Remove refresh token from user
-    req.user.refreshTokens = req.user.refreshTokens.filter(rt => rt.token !== refreshToken);
-    await req.user.save();
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== refreshToken);
+      await user.save();
+    }
   }
   
   // Clear cookies

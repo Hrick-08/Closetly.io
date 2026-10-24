@@ -661,6 +661,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!category) { els.categorySelect.focus(); return; }
 
     setLoading(true, editingId ? "Saving changes..." : "Adding to wardrobe...");
+    let saved = false;
     try {
       if (editingId) {
         const updated = await Api.wardrobe.updateItem(editingId, { name, category });
@@ -684,14 +685,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       }
 
-      closeModal();
-      render();
-      showAlert(editingId ? "Item updated successfully!" : "Item added to wardrobe!", "success");
+      saved = true;
     } catch (err) {
       console.error("Save failed:", err);
       showModalError(err.message || "Failed to save item. Please try again.");
     } finally {
       setLoading(false);
+      if (saved) {
+        closeModal();
+        render();
+        showAlert(editingId ? "Item updated successfully!" : "Item added to wardrobe!", "success");
+      }
     }
   });
 

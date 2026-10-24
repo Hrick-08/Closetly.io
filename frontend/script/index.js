@@ -135,11 +135,18 @@ document.addEventListener("DOMContentLoaded", () => {
       ddLogout.innerHTML = `<i class="bi bi-box-arrow-in-right"></i> Login`;
     }
 
-    ddLogout.addEventListener("click", () => {
+    ddLogout.addEventListener("click", async () => {
       closeDropdown();
       if (isLoggedIn()) {
         // Only actually log out if a session exists
-        if (typeof Auth !== "undefined") Auth.logOut();
+        if (typeof Auth !== "undefined") {
+          ddLogout.disabled = true;
+          try {
+            await Auth.logOut();
+          } finally {
+            ddLogout.disabled = false;
+          }
+        }
       }
       window.location.href = "pages/login.html";
     });

@@ -75,7 +75,7 @@ const changePasswordValidation = [
 router.post('/signup', signupValidation, validate, authController.signup);
 router.post('/login', loginValidation, validate, authController.login);
 router.post('/refresh', authController.refreshToken);
-router.post('/logout', authController.logout);
+router.post('/logout', protect, authController.logout);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 
