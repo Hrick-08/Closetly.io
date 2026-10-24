@@ -15,6 +15,13 @@ class Settings(BaseSettings):
 
     # ── Groq (Qwen 3.6 27B for vision) ─────────────────────
     groq_api_key: str = ""
+    assistant_model: str = "openai/gpt-oss-120b"
+    mongodb_uri: str = ""
+    mongodb_database: str = "closetly"
+    openai_api_key: str = ""
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimensions: int = 1536
+    internal_user_header: str = "X-Closetly-User-Id"
 
     # ── CORS ────────────────────────────────────────────────
     cors_origins: list[str] = ["*"]

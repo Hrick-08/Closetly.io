@@ -184,6 +184,11 @@ exports.chat = catchAsync(async (req, res, next) => {
     const response = await microserviceClient.post('/chat', {
       message,
       history,
+      preferences: req.user.preferences || {},
+    }, {
+      headers: {
+        'X-Closetly-User-Id': req.user._id.toString(),
+      },
     });
     
     res.json({

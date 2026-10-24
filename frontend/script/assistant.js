@@ -37,8 +37,6 @@ function initAssistant() {
 
   // Base URL of the FastAPI microservice. Change this if you deploy it
   // somewhere other than localhost.
-  const MICROSERVICE_URL = "http://127.0.0.1:8000";
-
   // Key used to persist the conversation across page navigations.
   // sessionStorage survives moving between pages in the same tab,
   // and clears automatically when the tab/browser closes.
@@ -199,22 +197,7 @@ function initAssistant() {
 
   async function generateAIResponse(userMessage) {
 
-    const response = await fetch(`${MICROSERVICE_URL}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: userMessage,
-        history: chatHistory
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Assistant request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await Api.microservice.chat(userMessage, chatHistory);
 
     // Keep the running conversation in sync for the next turn's context.
     chatHistory.push({ role: "user", content: userMessage });

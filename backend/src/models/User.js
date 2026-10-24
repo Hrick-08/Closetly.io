@@ -37,6 +37,16 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'Avatar URL cannot exceed 500 characters'],
     default: '',
   },
+  preferences: {
+    style: { type: String, trim: true, maxlength: 100, default: '' },
+    preferredColors: [{ type: String, trim: true, lowercase: true }],
+    avoidedColors: [{ type: String, trim: true, lowercase: true }],
+    sizes: {
+      tops: { type: String, trim: true, maxlength: 20, default: '' },
+      bottoms: { type: String, trim: true, maxlength: 20, default: '' },
+      footwear: { type: String, trim: true, maxlength: 20, default: '' },
+    },
+  },
   isEmailVerified: {
     type: Boolean,
     default: false,

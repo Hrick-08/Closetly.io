@@ -10,6 +10,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pymongo.errors import PyMongoError
 
 from app.config import settings
 from app.routers import search, classifiier, response
@@ -37,6 +38,16 @@ async def lifespan(app: FastAPI):
         logger.warning("GROQ_API_KEY is not set — /classify and image search will return 503")
     else:
         logger.info("Groq API key configured ✓")
+
+    try:
+        from app.services.mongo_service import _client
+        _client().admin.command("ping")
+        logger.info(
+            "MongoDB connection configured ✓ database=%s",
+            settings.mongodb_database,
+        )
+    except PyMongoError as error:
+        logger.warning("MongoDB is unavailable — personal stylist chat will return 503: %s", error)
 
     yield
 

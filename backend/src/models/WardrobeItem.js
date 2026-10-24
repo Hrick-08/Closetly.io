@@ -75,6 +75,11 @@ const wardrobeItemSchema = new mongoose.Schema({
     type: String,
     maxlength: [500, 'Notes cannot exceed 500 characters'],
   },
+  // Generated from safe descriptive fields by the microservice embedding job.
+  embedding: {
+    type: [Number],
+    select: false,
+  },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
