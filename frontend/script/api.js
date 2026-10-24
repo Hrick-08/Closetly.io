@@ -5,8 +5,8 @@
 
 const Api = (() => {
   /* ---------- Configuration ---------- */
-  const BACKEND_URL = "/api";
-  const MICROSERVICE_URL = "https://closetly-io-1.onrender.com";
+  const BACKEND_URL = "http://localhost:5000/api";
+  const MICROSERVICE_URL = "http://localhost:8000";
 
   /* ---------- Token Management ---------- */
   const TOKEN_KEY = "closetly_access_token";
