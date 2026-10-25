@@ -8,6 +8,17 @@ const Api = (() => {
   const BACKEND_URL = "https://closetly-io.vercel.app/api";
   const MICROSERVICE_URL = "http://closetly-io-1.onrender.com";
 
+  // function getBackendUrl() {
+  //   const { hostname, protocol } = window.location;
+  //   if (hostname === "localhost" || hostname === "127.0.0.1") {
+  //     return `${protocol}//${hostname}:5000/api`;
+  //   }
+  //   return BACKEND_URL;
+  // }
+  function getBackendUrl() {
+    return BACKEND_URL;
+  }
+
   /* ---------- Token Management ---------- */
   const TOKEN_KEY = "closetly_access_token";
   const REFRESH_TOKEN_KEY = "closetly_refresh_token";
@@ -42,7 +53,8 @@ const Api = (() => {
 
   /* ---------- HTTP Helpers ---------- */
   async function request(endpoint, options = {}) {
-    const url = `${BACKEND_URL}${endpoint}`;
+    const backendUrl = getBackendUrl();
+    const url = `${backendUrl}${endpoint}`;
     const token = getAccessToken();
 
     const headers = {
@@ -69,7 +81,18 @@ const Api = (() => {
         if (refreshed) {
           // Retry original request with new token
           config.headers["Authorization"] = `Bearer ${getAccessToken()}`;
-          return fetch(url, config);
+          const retryResponse = await fetch(url, config);
+          const retryData = await retryResponse.json().catch(() => ({}));
+
+          if (!retryResponse.ok) {
+            throw new ApiError(
+              retryResponse.status,
+              retryData.message || "Request failed",
+              retryData.errors
+            );
+          }
+
+          return retryData;
         } else {
           // Refresh failed, redirect to login
           clearTokens();
@@ -95,7 +118,8 @@ const Api = (() => {
   }
 
   async function requestMultipart(endpoint, formData) {
-    const url = `${BACKEND_URL}${endpoint}`;
+    const backendUrl = getBackendUrl();
+    const url = `${backendUrl}${endpoint}`;
     const token = getAccessToken();
 
     const headers = {};
@@ -141,7 +165,7 @@ const Api = (() => {
     if (!refreshToken) return false;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
+      const response = await fetch(`${getBackendUrl()}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken }),
@@ -366,11 +390,51 @@ const Api = (() => {
     },
   };
 
+  /* ---------- Persistent AI Stylist API ---------- */
+  const stylist = {
+    async createConversation() {
+      const data = await request("/stylist/conversations", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      return data.data.conversation;
+    },
+
+    async getConversations({ limit = 50, skip = 0 } = {}) {
+      const params = new URLSearchParams({ limit: String(limit), skip: String(skip) });
+      const data = await request(`/stylist/conversations?${params.toString()}`);
+      return data.data;
+    },
+
+    async getConversation(id) {
+      const data = await request(`/stylist/conversations/${encodeURIComponent(id)}`);
+      return data.data.conversation;
+    },
+
+    async deleteConversation(id) {
+      return request(`/stylist/conversations/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    },
+
+    async sendMessage(id, message, clientMessageId) {
+      const data = await request(
+        `/stylist/conversations/${encodeURIComponent(id)}/messages`,
+        {
+          method: "POST",
+          body: JSON.stringify({ message, clientMessageId }),
+        }
+      );
+      return data.data;
+    },
+  };
+
   /* ---------- Public API ---------- */
   return {
     auth,
     wardrobe,
     microservice,
+    stylist,
     ApiError,
     setTokens,
     clearTokens,

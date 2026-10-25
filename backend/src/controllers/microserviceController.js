@@ -175,30 +175,40 @@ exports.classifyImage = catchAsync(async (req, res, next) => {
  */
 exports.chat = catchAsync(async (req, res, next) => {
   const { message, history = [] } = req.body;
-  
+
   if (!message) {
     return next(new AppError('Message is required', 400));
   }
-  
+
+  try {
+    const response = await exports.generateChatResponse(message, history, req.user);
+
+    res.json({
+      success: true,
+      data: response,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+exports.generateChatResponse = async (message, history, user) => {
   try {
     const response = await microserviceClient.post('/chat', {
       message,
       history: Array.isArray(history) ? history.slice(-20) : [],
-      preferences: req.user.preferences || {},
+      preferences: user.preferences || {},
     }, {
       headers: {
-        'X-Closetly-User-Id': req.user._id.toString(),
+        'X-Closetly-User-Id': user._id.toString(),
       },
     });
-    
-    res.json({
-      success: true,
-      data: response.data,
-    });
+
+    return response.data;
   } catch (error) {
-    return next(handleMicroserviceError(error));
+    throw handleMicroserviceError(error);
   }
-});
+};
 
 /**
  * @route GET /api/microservice/health

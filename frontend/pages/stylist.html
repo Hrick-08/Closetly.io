@@ -46,23 +46,23 @@
         <span>New Chat</span>
       </button>
 
-      <div class="demo-notice">
+      <div class="stylist-notice" id="stylistNotice" role="status" aria-live="polite">
         <i class="bi bi-info-circle"></i>
-        <span>Demo conversations only. Chats are not saved.</span>
+        <span>Conversations are saved to your account. Only you can access them.</span>
       </div>
       <div class="recent-heading">
         <span>Recent conversations</span>
-        <span class="demo-count" id="conversationCount">0</span>
+        <span class="conversation-count" id="conversationCount">0</span>
       </div>
       <div class="conversation-list" id="conversationList" role="list"></div>
       <div class="conversation-empty" id="conversationEmpty" hidden>
         <i class="bi bi-chat-square-text"></i>
         <p>Your conversations will appear here.</p>
-        <span>Start a new chat to try the demo.</span>
+        <span>Start a new chat to begin.</span>
       </div>
 
       <div class="sidebar-footer">
-        <span class="demo-avatar"><i class="bi bi-stars"></i></span>
+        <span class="stylist-avatar"><i class="bi bi-stars"></i></span>
         <div><strong>Closetly Stylist</strong><small>Here for your next look</small></div>
         <span class="online-dot" aria-label="Available"></span>
       </div>
@@ -82,7 +82,7 @@
             <span><i class="online-dot"></i> Style ideas, made personal</span>
           </div>
         </div>
-        <span class="demo-pill"><span></span> DEMO</span>
+        <span class="privacy-pill"><span></span> PRIVATE CHAT</span>
       </div>
 
       <div class="chat-scroll-area" id="chatScrollArea" aria-live="polite">
@@ -114,13 +114,14 @@
               <i class="bi bi-arrow-up-right suggestion-arrow"></i>
             </button>
           </div>
-          <p class="welcome-footnote"><i class="bi bi-stars"></i> Just a demo for now — your messages stay in this page session.</p>
+          <p class="welcome-footnote"><i class="bi bi-shield-check"></i> Your conversations are saved securely to your account.</p>
         </section>
 
         <div class="message-list" id="messageList" hidden></div>
       </div>
 
       <div class="composer-wrap">
+        <div class="chat-error" id="chatError" role="alert" hidden></div>
         <form class="message-composer" id="messageForm">
           <label class="visually-hidden" for="messageInput">Message your AI stylist</label>
           <textarea id="messageInput" rows="1" maxlength="1000" placeholder="Ask about an outfit, an occasion, or a piece you love…" autocomplete="off"></textarea>
@@ -128,13 +129,15 @@
             <i class="bi bi-arrow-up"></i>
           </button>
         </form>
-        <div class="composer-hint"><span>Enter to send</span><span class="hint-dot"></span><span>Shift + Enter for a new line</span><span class="mock-label">Mock stylist replies</span></div>
+        <div class="composer-hint"><span>Enter to send</span><span class="hint-dot"></span><span>Shift + Enter for a new line</span><span class="stylist-label">AI Stylist</span></div>
       </div>
     </section>
   </main>
 
   <div id="aiAssistantMount"></div>
 
+  <script src="../script/api.js"></script>
+  <script src="../script/auth.js"></script>
   <script src="../script/assistant.js"></script>
   <script src="../script/stylist.js"></script>
 </body>

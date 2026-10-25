@@ -21,6 +21,7 @@ const { sanitize } = require('./middleware/validation');
 const authRoutes = require('./routes/auth');
 const wardrobeRoutes = require('./routes/wardrobe');
 const microserviceRoutes = require('./routes/microservice');
+const stylistRoutes = require('./routes/stylist');
 
 // Connect to MongoDB
 connectDB();
@@ -60,9 +61,11 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5500',
+  'http://localhost:8765',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5500',
+  'http://127.0.0.1:8765',
 ];
 
 const corsOptions = {
@@ -196,6 +199,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/wardrobe', wardrobeRoutes);
 
 app.use('/api/microservice', microserviceRoutes);
+
+app.use('/api/stylist', stylistRoutes);
 
 // ============================================================
 // 404 HANDLER

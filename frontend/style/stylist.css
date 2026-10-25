@@ -167,6 +167,11 @@ body.stylist-body {
   background: #5f3b26;
 }
 
+.new-chat-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
 .new-chat-button:focus-visible,
 .conversation-item:focus-visible,
 .suggestion-card:focus-visible,
@@ -177,7 +182,7 @@ body.stylist-body {
   outline-offset: 2px;
 }
 
-.demo-notice {
+.stylist-notice {
   display: flex;
   gap: 8px;
   margin: 13px 1px 25px;
@@ -190,10 +195,20 @@ body.stylist-body {
   line-height: 1.45;
 }
 
-.demo-notice i {
+.stylist-notice i {
   flex: 0 0 auto;
   color: var(--stylist-brown);
   font-size: 13px;
+}
+
+.stylist-notice.is-error {
+  border-color: #e9c5b5;
+  background: #fff7f3;
+  color: #874c34;
+}
+
+.stylist-notice.is-error i {
+  color: #a6573c;
 }
 
 .recent-heading {
@@ -208,7 +223,7 @@ body.stylist-body {
   text-transform: uppercase;
 }
 
-.demo-count {
+.conversation-count {
   display: grid;
   min-width: 22px;
   height: 22px;
@@ -222,22 +237,26 @@ body.stylist-body {
 
 .conversation-list {
   display: grid;
+  width: 100%;
+  min-width: 0;
   gap: 5px;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
 .conversation-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   align-items: center;
-  gap: 10px;
-  padding: 11px 10px;
+  gap: 4px;
+  padding: 3px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: transparent;
   color: #504940;
-  cursor: pointer;
-  text-align: left;
   transition: border-color .18s ease, background .18s ease;
 }
 
@@ -251,18 +270,75 @@ body.stylist-body {
   box-shadow: 0 3px 10px rgba(49, 38, 26, .04);
 }
 
-.conversation-item > i {
+.conversation-select {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.conversation-select:focus-visible,
+.conversation-delete:focus-visible {
+  outline: 3px solid rgba(148, 97, 62, .35);
+  outline-offset: 1px;
+}
+
+.conversation-select > i {
   flex: 0 0 auto;
   color: #a47b5d;
   font-size: 15px;
 }
 
-.conversation-item span {
+.conversation-select span {
   overflow: hidden;
+  min-width: 0;
+  flex: 1;
   font-size: 12px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.conversation-delete {
+  display: flex;
+  width: auto;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7px;
+  border: 1px solid #eadbd0;
+  border-radius: 7px;
+  background: #faf4ee;
+  color: #815c45;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  transition: background .18s ease, color .18s ease;
+}
+
+.conversation-delete:hover {
+  background: #f8e8df;
+  color: #a3412d;
+}
+
+.conversation-delete span {
+  white-space: nowrap;
+}
+
+.conversation-delete:disabled {
+  cursor: wait;
+  opacity: .45;
 }
 
 .conversation-empty {
@@ -300,7 +376,7 @@ body.stylist-body {
   border-top: 1px solid #e5ded5;
 }
 
-.demo-avatar {
+.stylist-avatar {
   display: grid;
   width: 34px;
   height: 34px;
@@ -400,7 +476,7 @@ body.stylist-body {
   font-size: 10px;
 }
 
-.demo-pill {
+.privacy-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -414,7 +490,7 @@ body.stylist-body {
   letter-spacing: .08em;
 }
 
-.demo-pill span {
+.privacy-pill span {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -662,6 +738,38 @@ body.stylist-body {
   font-size: 9px;
 }
 
+.message-retry {
+  display: block;
+  margin-top: 9px;
+  padding: 6px 9px;
+  border: 1px solid #dfb9a8;
+  border-radius: 7px;
+  background: #fff8f4;
+  color: #8f4f35;
+  cursor: pointer;
+  font: 600 10px "DM Sans", sans-serif;
+}
+
+.message-row.failed .message-content {
+  border-color: #e9c5b5;
+}
+
+.chat-error {
+  width: min(760px, 100%);
+  margin: 0 auto 8px;
+  padding: 9px 12px;
+  border: 1px solid #e9c5b5;
+  border-radius: 9px;
+  background: #fff7f3;
+  color: #874c34;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.chat-error[hidden] {
+  display: none;
+}
+
 .typing-indicator {
   display: flex;
   align-items: center;
@@ -771,7 +879,7 @@ body.stylist-body {
   background: #b7aa9d;
 }
 
-.mock-label {
+.stylist-label {
   margin-left: auto;
   color: #aa8a6d;
 }
@@ -929,7 +1037,7 @@ body.stylist-body {
     font-size: 9px;
   }
 
-  .demo-pill {
+  .privacy-pill {
     padding: 5px 7px;
     font-size: 8px;
   }
@@ -1015,7 +1123,7 @@ body.stylist-body {
     font-size: 8px;
   }
 
-  .mock-label {
+  .stylist-label {
     display: none;
   }
 }

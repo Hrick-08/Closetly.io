@@ -14,114 +14,196 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
   const openSidebarButton = document.getElementById("openSidebar");
   const closeSidebarButton = document.getElementById("closeSidebar");
+  const notice = document.getElementById("stylistNotice");
+  const chatError = document.getElementById("chatError");
 
   if (!conversationList || !messageForm || !messageInput) return;
 
-  const conversations = [
-    {
-      id: "college-style",
-      title: "Easy looks for college",
-      messages: [
-        { role: "user", content: "I need an easy outfit for college that still feels put together." },
-        {
-          role: "assistant",
-          content: "A relaxed, layered look is a great everyday starting point. Try a crisp white tee with straight-leg denim, then add a light overshirt for a little structure. Keep the shoes simple and comfortable.",
-          outfit: {
-            title: "The campus classic",
-            description: "Easy layers with a clean, balanced silhouette.",
-            items: ["White tee", "Straight-leg denim", "Olive overshirt", "Clean sneakers"],
-          },
-        },
-      ],
-    },
-    {
-      id: "weekend-brunch",
-      title: "Weekend brunch outfit",
-      messages: [
-        { role: "user", content: "What could I wear to a relaxed weekend brunch?" },
-        { role: "assistant", content: "Try a soft knit top with wide-leg trousers and a low-profile shoe. A warm neutral base feels effortless; add one small accessory in a contrasting texture to make it feel intentional." },
-      ],
-    },
-    {
-      id: "colors",
-      title: "Colors that work with navy",
-      messages: [
-        { role: "user", content: "What colors pair well with navy?" },
-        { role: "assistant", content: "Navy is wonderfully versatile. For a refined combination, pair it with cream or soft white. Camel adds warmth, while muted sage feels relaxed. If you want a brighter accent, try a small touch of rust or coral." },
-      ],
-    },
-    {
-      id: "rainy-day",
-      title: "A polished rainy-day look",
-      messages: [
-        { role: "user", content: "How do I dress nicely for a rainy day?" },
-        { role: "assistant", content: "Build around a light, water-resistant outer layer and shoes that can handle wet sidewalks. A tonal base underneath keeps the outfit polished; add a compact umbrella and keep delicate fabrics for another day." },
-      ],
-    },
-  ];
-
+  const ACTIVE_CONVERSATION_KEY = "closetlyStylistActiveConversationId";
+  const conversations = [];
   let activeConversationId = null;
+  let activeConversation = null;
   let isResponding = false;
+  let conversationLoadId = 0;
+  let typingRow = null;
 
-  const mockReplies = [
-    {
-      match: /party|evening|night|date/i,
-      response: "For an evening plan, start with one piece that feels a little special and keep the rest of the look easy. A sleek dark base with a warm-toned layer and one polished accessory creates a confident outfit without feeling overdone.",
-      outfit: {
-        title: "Easy evening polish",
-        description: "A simple base, one rich accent, and a little shine.",
-        items: ["Dark tailored trousers", "Soft blouse", "Warm-toned jacket", "Simple gold jewelry"],
-      },
-    },
-    {
-      match: /college|class|campus|school/i,
-      response: "For a comfortable college outfit, try a breathable top with relaxed denim and a lightweight layer you can take off between classes. Keep the colors tonal, then let your shoes or bag add a little personality.",
-      outfit: {
-        title: "The everyday campus edit",
-        description: "Comfortable layers that still look considered.",
-        items: ["Cotton tee", "Relaxed denim", "Light overshirt", "Everyday sneakers"],
-      },
-    },
-    {
-      match: /color|match|pair|palette/i,
-      response: "A lovely way to build a color combination is to choose one anchor shade, one soft neutral, and one small accent. Navy works beautifully with cream and camel; olive pairs naturally with ecru and a touch of rust.",
-    },
-    {
-      match: /wardrobe|closet|outfit/i,
-      response: "Think of your wardrobe as a set of building blocks: choose a favorite base piece, add one layer for shape, and finish with a shoe that suits the occasion. Since this is a demo, I can’t see your actual wardrobe yet—but this formula works with pieces you already love.",
-      outfit: {
-        title: "A wardrobe-building formula",
-        description: "Use your own favorite pieces to make this combination yours.",
-        items: ["Favorite base", "One versatile layer", "Comfortable shoe", "Personal accessory"],
-      },
-    },
-  ];
+  function setNotice(message, isError = false) {
+    notice.classList.toggle("is-error", isError);
+    const icon = document.createElement("i");
+    icon.className = isError ? "bi bi-exclamation-circle" : "bi bi-shield-check";
+    icon.setAttribute("aria-hidden", "true");
+    const text = document.createElement("span");
+    text.textContent = message;
+    notice.replaceChildren(icon, text);
+  }
+
+  function showChatError(message) {
+    chatError.textContent = message;
+    chatError.hidden = !message;
+  }
+
+  function updateSendState() {
+    sendButton.disabled = isResponding || !messageInput.value.trim();
+    messageInput.disabled = isResponding;
+    messageInput.style.height = "auto";
+    messageInput.style.height = `${Math.min(messageInput.scrollHeight, 140)}px`;
+  }
+
+  function createClientMessageId() {
+    if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
+  function upsertConversation(conversation) {
+    const index = conversations.findIndex((item) => item._id === conversation._id);
+    if (index === -1) {
+      conversations.unshift(conversation);
+    } else {
+      conversations[index] = { ...conversations[index], ...conversation };
+    }
+    conversations.sort((first, second) => (
+      new Date(second.updatedAt || second.createdAt).getTime()
+      - new Date(first.updatedAt || first.createdAt).getTime()
+    ));
+    renderConversations();
+  }
 
   function renderConversations() {
     conversationList.replaceChildren();
     conversations.forEach((conversation) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = `conversation-item${conversation.id === activeConversationId ? " active" : ""}`;
-      button.setAttribute("role", "listitem");
-      button.setAttribute("aria-current", conversation.id === activeConversationId ? "true" : "false");
+      const row = document.createElement("div");
+      row.className = `conversation-item${conversation._id === activeConversationId ? " active" : ""}`;
+      row.setAttribute("role", "listitem");
+      row.dataset.conversationId = conversation._id;
+      const selectButton = document.createElement("button");
+      selectButton.type = "button";
+      selectButton.className = "conversation-select";
+      selectButton.setAttribute("aria-current", conversation._id === activeConversationId ? "true" : "false");
       const icon = document.createElement("i");
       icon.className = "bi bi-chat-left-text";
       icon.setAttribute("aria-hidden", "true");
       const title = document.createElement("span");
-      title.textContent = conversation.title;
-      button.append(icon, title);
-      button.addEventListener("click", () => selectConversation(conversation.id));
-      conversationList.appendChild(button);
+      title.textContent = conversation.title || "New conversation";
+      selectButton.append(icon, title);
+      selectButton.addEventListener("click", () => selectConversation(conversation._id));
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "conversation-delete";
+      deleteButton.setAttribute("aria-label", `Delete ${title.textContent}`);
+      deleteButton.title = "Delete conversation";
+      deleteButton.disabled = isResponding;
+      deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i><span>Delete</span>';
+      deleteButton.addEventListener("click", () => deleteConversation(conversation._id));
+      row.append(selectButton, deleteButton);
+      conversationList.appendChild(row);
     });
 
     conversationEmpty.hidden = conversations.length > 0;
     conversationCount.textContent = String(conversations.length);
   }
 
+  async function deleteConversation(id) {
+    const conversation = conversations.find((item) => item._id === id);
+    if (!conversation) return;
+    const title = conversation.title || "New conversation";
+    if (!window.confirm(`Delete "${title}" and all its messages? This cannot be undone.`)) return;
+
+    const row = [...conversationList.querySelectorAll(".conversation-item")]
+      .find((item) => item.dataset.conversationId === id);
+    const deleteButton = row?.querySelector(".conversation-delete");
+
+    if (deleteButton) deleteButton.disabled = true;
+    showChatError("");
+    try {
+      await Api.stylist.deleteConversation(id);
+      const index = conversations.findIndex((item) => item._id === id);
+      if (index !== -1) conversations.splice(index, 1);
+
+      if (activeConversationId === id) {
+        activeConversationId = null;
+        activeConversation = null;
+        conversationLoadId += 1;
+        localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+        activeTitle.textContent = "Your Personal AI Stylist";
+        showWelcome();
+      }
+      renderConversations();
+      closeSidebar();
+    } catch (error) {
+      if (deleteButton) deleteButton.disabled = false;
+      showChatError(`We couldn't delete this conversation. ${error.message}`);
+    }
+  }
+
+  function placeholderImage() {
+    return `data:image/svg+xml;utf8,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="100%" height="100%" fill="#f0ece5"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9a6037" font-family="sans-serif" font-size="14">No image</text></svg>'
+    )}`;
+  }
+
+  function appendOutfits(content, responseData) {
+    (Array.isArray(responseData?.outfits) ? responseData.outfits : []).forEach((outfit) => {
+      const card = document.createElement("article");
+      card.className = "ai-outfit-card";
+      const title = document.createElement("h4");
+      title.textContent = outfit.name || outfit.title || "Outfit idea";
+      card.appendChild(title);
+
+      const items = document.createElement("div");
+      items.className = "ai-outfit-items";
+      (Array.isArray(outfit.items) ? outfit.items : []).forEach((item) => {
+        const itemCard = document.createElement("div");
+        itemCard.className = "ai-outfit-item";
+        const image = document.createElement("img");
+        image.src = item.imageUrl || item.imageBase64 || placeholderImage();
+        image.alt = item.name ? `${item.name} clothing item` : "Wardrobe item";
+        image.onerror = () => {
+          image.onerror = null;
+          image.src = placeholderImage();
+        };
+        const name = document.createElement("h5");
+        name.textContent = item.name || "Wardrobe item";
+        const category = document.createElement("span");
+        category.textContent = item.category || "Clothing";
+        itemCard.append(image, name, category);
+        items.appendChild(itemCard);
+      });
+      if (items.childElementCount) card.appendChild(items);
+
+      if (outfit.reason) {
+        const reason = document.createElement("p");
+        reason.className = "ai-outfit-reason";
+        reason.textContent = outfit.reason;
+        card.appendChild(reason);
+      }
+
+      if (Array.isArray(outfit.stylingTips) && outfit.stylingTips.length) {
+        const tipsTitle = document.createElement("strong");
+        tipsTitle.className = "ai-outfit-tips-title";
+        tipsTitle.textContent = "Stylist tip";
+        const tips = document.createElement("ul");
+        tips.className = "ai-outfit-tips";
+        outfit.stylingTips.forEach((tip) => {
+          const tipItem = document.createElement("li");
+          tipItem.textContent = tip;
+          tips.appendChild(tipItem);
+        });
+        card.append(tipsTitle, tips);
+      }
+
+      content.appendChild(card);
+    });
+  }
+
   function appendMessage(message, { animate = true } = {}) {
     const row = document.createElement("article");
-    row.className = `message-row ${message.role}`;
+    row.className = `message-row ${message.role}${message.status === "failed" ? " failed" : ""}`;
     if (!animate) row.style.animation = "none";
 
     const avatar = document.createElement("span");
@@ -134,27 +216,25 @@ document.addEventListener("DOMContentLoaded", () => {
     content.className = "message-content";
     const meta = document.createElement("span");
     meta.className = "message-meta";
-    meta.textContent = message.role === "user" ? "You" : "Closetly Stylist · Demo";
+    meta.textContent = message.role === "user" ? "You" : "Closetly Stylist";
     const text = document.createElement("div");
-    text.textContent = message.content;
+    text.textContent = message.content || message.responseData?.response || "";
     content.append(meta, text);
 
-    if (message.outfit) {
-      const outfit = document.createElement("section");
-      outfit.className = "outfit-card";
-      const heading = document.createElement("h3");
-      heading.textContent = message.outfit.title;
-      const description = document.createElement("p");
-      description.textContent = message.outfit.description;
-      const tags = document.createElement("div");
-      tags.className = "outfit-tags";
-      message.outfit.items.forEach((item) => {
-        const tag = document.createElement("span");
-        tag.textContent = item;
-        tags.appendChild(tag);
+    if (message.role === "assistant") {
+      appendOutfits(content, message.responseData);
+    }
+
+    if (message.status === "failed" && message.clientMessageId) {
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.className = "message-retry";
+      retry.textContent = "Message failed. Try again";
+      retry.addEventListener("click", () => {
+        showChatError("");
+        sendMessage(message.content, message.clientMessageId);
       });
-      outfit.append(heading, description, tags);
-      content.appendChild(outfit);
+      content.appendChild(retry);
     }
 
     row.append(avatar, content);
@@ -165,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
     welcomeScreen.hidden = true;
     messageList.hidden = false;
     messageList.replaceChildren();
-    conversation.messages.forEach((message) => appendMessage(message, { animate: false }));
+    (conversation.messages || []).forEach((message) => appendMessage(message, { animate: false }));
     scrollToLatest();
   }
 
@@ -175,52 +255,82 @@ document.addEventListener("DOMContentLoaded", () => {
     messageList.replaceChildren();
   }
 
-  function selectConversation(id) {
-    activeConversationId = id;
-    const conversation = conversations.find((item) => item.id === id);
-    if (!conversation) {
-      activeTitle.textContent = "Your Personal AI Stylist";
-      showWelcome();
-    } else {
-      activeTitle.textContent = conversation.title;
-      showMessages(conversation);
-    }
-    renderConversations();
-    closeSidebar();
-  }
-
-  function startNewChat() {
-    const conversation = {
-      id: `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      title: "New conversation",
-      messages: [],
-      isNew: true,
-    };
-    conversations.unshift(conversation);
-    activeConversationId = conversation.id;
-    activeTitle.textContent = "New conversation";
-    showWelcome();
-    renderConversations();
-    closeSidebar();
-    messageInput.focus();
-  }
-
   function scrollToLatest() {
     requestAnimationFrame(() => {
       chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
     });
   }
 
-  function updateSendState() {
-    sendButton.disabled = isResponding || !messageInput.value.trim();
-    messageInput.style.height = "auto";
-    messageInput.style.height = `${Math.min(messageInput.scrollHeight, 140)}px`;
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarBackdrop.classList.add("open");
+    closeSidebarButton.focus();
   }
 
-  function mockResponseFor(message) {
-    return mockReplies.find((reply) => reply.match.test(message)) || {
-      response: "That sounds like a fun styling question. Start with the piece you feel best in, then balance its color, shape, and comfort with the occasion. Tell me a little more about what you have in mind and I can help you narrow it down.",
-    };
+  function closeSidebar() {
+    sidebar.classList.remove("open");
+    sidebarBackdrop.classList.remove("open");
+  }
+
+  async function selectConversation(id) {
+    if (id === activeConversationId && activeConversation) {
+      closeSidebar();
+      return;
+    }
+
+    activeConversationId = id;
+    activeConversation = null;
+    localStorage.setItem(ACTIVE_CONVERSATION_KEY, id);
+    activeTitle.textContent = "Loading conversation…";
+    messageList.hidden = false;
+    welcomeScreen.hidden = true;
+    messageList.replaceChildren();
+    renderConversations();
+    showChatError("");
+    closeSidebar();
+    const loadId = ++conversationLoadId;
+
+    try {
+      const conversation = await Api.stylist.getConversation(id);
+      if (loadId !== conversationLoadId) return;
+      activeConversation = conversation;
+      activeTitle.textContent = conversation.title || "New conversation";
+      upsertConversation(conversation);
+      if (conversation.messages?.length) showMessages(conversation);
+      else showWelcome();
+    } catch (error) {
+      if (loadId !== conversationLoadId) return;
+      if (error.status === 404) {
+        const index = conversations.findIndex((item) => item._id === id);
+        if (index !== -1) conversations.splice(index, 1);
+        localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+        activeConversationId = null;
+        renderConversations();
+      }
+      activeTitle.textContent = "Your Personal AI Stylist";
+      showWelcome();
+      showChatError(`We couldn't open this conversation. ${error.message}`);
+    }
+  }
+
+  async function startNewChat() {
+    newChatButton.disabled = true;
+    showChatError("");
+    try {
+      const conversation = await Api.stylist.createConversation();
+      activeConversation = conversation;
+      activeConversationId = conversation._id;
+      localStorage.setItem(ACTIVE_CONVERSATION_KEY, conversation._id);
+      activeTitle.textContent = conversation.title || "New conversation";
+      upsertConversation(conversation);
+      showWelcome();
+      closeSidebar();
+      messageInput.focus();
+    } catch (error) {
+      showChatError(`We couldn't create a conversation. ${error.message}`);
+    } finally {
+      newChatButton.disabled = false;
+    }
   }
 
   function showTypingIndicator() {
@@ -239,50 +349,131 @@ document.addEventListener("DOMContentLoaded", () => {
     return row;
   }
 
-  function sendMessage(message) {
+  async function sendMessage(message, clientMessageId = createClientMessageId()) {
     if (!message || isResponding) return;
-    if (!activeConversationId) startNewChat();
+    isResponding = true;
+    newChatButton.disabled = true;
+    updateSendState();
+    renderConversations();
 
-    const conversation = conversations.find((item) => item.id === activeConversationId);
-    if (!conversation) return;
-
-    conversation.messages.push({ role: "user", content: message });
-    if (conversation.isNew) {
-      conversation.title = message.trim().slice(0, 34) || "New conversation";
-      conversation.isNew = false;
-      activeTitle.textContent = conversation.title;
+    showChatError("");
+    if (!activeConversationId) {
+      try {
+        const conversation = await Api.stylist.createConversation();
+        activeConversation = conversation;
+        activeConversationId = conversation._id;
+        localStorage.setItem(ACTIVE_CONVERSATION_KEY, conversation._id);
+        upsertConversation(conversation);
+      } catch (error) {
+        showChatError(`We couldn't create a conversation. ${error.message}`);
+        isResponding = false;
+        newChatButton.disabled = false;
+        updateSendState();
+        renderConversations();
+        return;
+      }
     }
+
+    const requestConversationId = activeConversationId;
+    if (!activeConversation || activeConversation._id !== requestConversationId) {
+      try {
+        activeConversation = await Api.stylist.getConversation(requestConversationId);
+      } catch (error) {
+        showChatError(`We couldn't open this conversation. ${error.message}`);
+        isResponding = false;
+        newChatButton.disabled = false;
+        updateSendState();
+        renderConversations();
+        return;
+      }
+    }
+
+    const requestConversation = activeConversation;
+    let userMessage = requestConversation.messages.find(
+      (item) => item.clientMessageId === clientMessageId && item.role === "user"
+    );
+    if (!userMessage) {
+      userMessage = {
+        role: "user",
+        content: message,
+        clientMessageId,
+        status: "processing",
+      };
+      requestConversation.messages.push(userMessage);
+    } else {
+      userMessage.status = "processing";
+    }
+
+    if (requestConversation.messageCount === 0 && requestConversation.title === "New conversation") {
+      requestConversation.title = message.slice(0, 100);
+      activeTitle.textContent = requestConversation.title;
+    }
+
     welcomeScreen.hidden = true;
     messageList.hidden = false;
-    appendMessage({ role: "user", content: message });
-    renderConversations();
-    isResponding = true;
+    showMessages(requestConversation);
+    upsertConversation(requestConversation);
+    newChatButton.disabled = true;
     updateSendState();
-    const typingRow = showTypingIndicator();
-    const reply = mockResponseFor(message);
+    typingRow = showTypingIndicator();
 
-    window.setTimeout(() => {
-      typingRow.remove();
-      conversation.messages.push({ role: "assistant", ...reply });
-      isResponding = false;
-      updateSendState();
-      if (activeConversationId === conversation.id) {
-        appendMessage({ role: "assistant", ...reply });
-        scrollToLatest();
+    try {
+      const result = await Api.stylist.sendMessage(
+        requestConversationId,
+        message,
+        clientMessageId
+      );
+      const responseConversation = result.conversation;
+      upsertConversation(responseConversation);
+      if (activeConversationId === requestConversationId) {
+        activeConversation = responseConversation;
+        activeTitle.textContent = responseConversation.title || "Your Personal AI Stylist";
+        showMessages(responseConversation);
         messageInput.focus();
       }
-    }, 750);
+    } catch (error) {
+      userMessage.status = "failed";
+      upsertConversation(requestConversation);
+      if (activeConversationId === requestConversationId) {
+        activeConversation = requestConversation;
+        showMessages(requestConversation);
+        showChatError(
+          `The stylist couldn't answer right now. ${error.message} You can retry this message safely.`
+        );
+      }
+    } finally {
+      typingRow?.remove();
+      typingRow = null;
+      isResponding = false;
+      newChatButton.disabled = false;
+      updateSendState();
+      renderConversations();
+    }
   }
 
-  function openSidebar() {
-    sidebar.classList.add("open");
-    sidebarBackdrop.classList.add("open");
-    closeSidebarButton.focus();
-  }
+  async function loadConversations() {
+    newChatButton.disabled = true;
+    setNotice("Loading your saved conversations…");
+    try {
+      const result = await Api.stylist.getConversations({ limit: 100, skip: 0 });
+      conversations.splice(0, conversations.length, ...result.conversations);
+      renderConversations();
+      setNotice("Conversations are saved to your account. Only you can access them.");
 
-  function closeSidebar() {
-    sidebar.classList.remove("open");
-    sidebarBackdrop.classList.remove("open");
+      const savedId = localStorage.getItem(ACTIVE_CONVERSATION_KEY);
+      if (savedId && conversations.some((item) => item._id === savedId)) {
+        await selectConversation(savedId);
+      } else {
+        localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+        showWelcome();
+      }
+    } catch (error) {
+      setNotice(`We couldn't load your conversations. ${error.message}`, true);
+      renderConversations();
+      showWelcome();
+    } finally {
+      newChatButton.disabled = false;
+    }
   }
 
   newChatButton.addEventListener("click", startNewChat);
@@ -319,4 +510,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderConversations();
   updateSendState();
+  loadConversations();
 });
