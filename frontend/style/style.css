@@ -114,10 +114,12 @@ button {
   padding: 0 22px;
   background: transparent;
   color: #303030;
+  text-decoration: none;
   font-size: 17px;
   font-weight: 500;
   transition: .2s ease;
 }
+
 
 .nav-item i {
   font-size: 25px;

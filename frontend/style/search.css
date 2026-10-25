@@ -511,7 +511,20 @@
   }
 
   .search-topnav {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    max-width: calc(100vw - 190px);
+    scrollbar-width: none;
+  }
+
+  .search-topnav::-webkit-scrollbar {
     display: none;
+  }
+
+  .search-topnav a {
+    white-space: nowrap;
+    font-size: 12px;
   }
 
   .upload-card {

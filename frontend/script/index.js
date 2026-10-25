@@ -197,6 +197,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // The AI Stylist lives on its own dedicated page
+    if (pageId === "stylist") {
+        window.location.href = "pages/stylist.html";
+        return;
+    }
+
     // Settings lives on its own dedicated page
     if (pageId === "settings") {
         window.location.href = "pages/myprofile.html";

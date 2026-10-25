@@ -746,7 +746,20 @@
   }
 
   .wardrobe-topnav {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    max-width: calc(100vw - 190px);
+    scrollbar-width: none;
+  }
+
+  .wardrobe-topnav::-webkit-scrollbar {
     display: none;
+  }
+
+  .wardrobe-topnav a {
+    white-space: nowrap;
+    font-size: 12px;
   }
 
   .wardrobe-header .btn-primary-custom {
