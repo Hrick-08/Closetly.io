@@ -148,6 +148,105 @@
   display: none;
 }
 
+/* ---------------- WARDROBE LOADING SKELETON ---------------- */
+
+.wb-skeleton[hidden] {
+  display: none;
+}
+
+.wb-skeleton {
+  margin-top: 8px;
+}
+
+.wb-skeleton-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.wb-skeleton-line,
+.wb-skeleton-card span,
+.wb-skeleton-card i {
+  display: block;
+  background: linear-gradient(100deg, #eae5de 30%, #f6f3ee 50%, #eae5de 70%);
+  background-size: 250% 100%;
+  animation: closetly-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.wb-skeleton-title {
+  width: 52px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.wb-skeleton-count {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.wb-skeleton-action {
+  width: 72px;
+  height: 25px;
+  border-radius: 999px;
+  margin-left: auto;
+}
+
+.wb-skeleton-feature {
+  height: 207px;
+  border: 1px solid #e9e3db;
+  border-radius: 12px;
+  background: linear-gradient(100deg, #f1ede7 30%, #f8f6f2 50%, #f1ede7 70%);
+  background-size: 250% 100%;
+  animation: closetly-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.wb-skeleton-heading-secondary {
+  margin-top: 38px;
+}
+
+.wb-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.wb-skeleton-card {
+  overflow: hidden;
+  padding-bottom: 14px;
+  border: 1px solid #e9e3db;
+  border-radius: 12px;
+  background: #f1ede7;
+}
+
+.wb-skeleton-card span {
+  aspect-ratio: 1 / 1;
+}
+
+.wb-skeleton-card i {
+  width: 72%;
+  height: 12px;
+  margin: 12px 12px 0;
+  border-radius: 6px;
+}
+
+.wb-skeleton-card i:last-child {
+  width: 48%;
+  height: 10px;
+  margin-top: 8px;
+}
+
+@keyframes closetly-skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
 /* ---------------- CATEGORY SECTIONS ---------------- */
 
 .wb-category {
@@ -745,6 +844,14 @@
     padding: 32px 20px 55px;
   }
 
+  .wb-skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wb-skeleton-feature {
+    height: 180px;
+  }
+
   .wardrobe-topnav {
     display: flex;
     gap: 14px;
@@ -794,5 +901,14 @@
   .wb-loading-card {
     margin: 0 20px;
     padding: 32px 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-skeleton-line,
+  .wb-skeleton-card span,
+  .wb-skeleton-card i,
+  .wb-skeleton-feature {
+    animation: none;
   }
 }

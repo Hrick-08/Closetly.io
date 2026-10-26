@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     search:     document.getElementById("wbSearch"),
     filter:     document.getElementById("wbFilterCategory"),
     alert:      document.getElementById("wbAlert"),
+    skeleton:   document.getElementById("wbSkeleton"),
     sections:   document.getElementById("wbSections"),
 
     categoryOverlay: document.getElementById("wbCategoryOverlay"),
@@ -354,10 +355,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }));
       render();
       updateFilterCategories(data.categories || []);
+      els.skeleton.hidden = true;
     } catch (err) {
       console.error("Failed to load items:", err);
       showAlert("Failed to load wardrobe items. Please try again.");
       items = [];
+      els.skeleton.hidden = true;
       render();
     }
   }
