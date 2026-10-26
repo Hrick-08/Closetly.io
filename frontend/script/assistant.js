@@ -37,55 +37,32 @@ function initAssistant() {
 
   // Base URL of the FastAPI microservice. Change this if you deploy it
   // somewhere other than localhost.
-  // Key used to persist the conversation across page navigations.
-  // sessionStorage survives moving between pages in the same tab,
-  // and clears automatically when the tab/browser closes.
-  const STORAGE_KEY = "closetlyChatHistory";
-
-  // Running conversation history sent to /chat for multi-turn context.
-  // Restored from sessionStorage on load so it survives page changes.
-  let chatHistory = loadChatHistory();
+  const WELCOME_MESSAGE = "Hey! I'm your Closetly AI stylist. What are you looking for today?";
+  let chatHistory = [];
 
 
   /* -----------------------------------------
-     PERSISTENCE
+     CHAT RESET
   ----------------------------------------- */
-
-  function loadChatHistory() {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      const history = stored ? JSON.parse(stored) : [];
-      return Array.isArray(history) ? history.slice(-20) : [];
-    } catch (error) {
-      console.error("Failed to load chat history:", error);
-      return [];
-    }
-  }
-
-  function saveChatHistory() {
-    try {
-      chatHistory = chatHistory.slice(-20);
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
-    } catch (error) {
-      console.error("Failed to save chat history:", error);
-    }
-  }
-
-  function restoreChatUI() {
-    chatHistory.forEach(turn => {
-      addMessage(turn.content, turn.role === "user" ? "user" : "bot");
-    });
-  }
 
   function clearChatHistory() {
     chatHistory = [];
-    sessionStorage.removeItem(STORAGE_KEY);
     aiMessages.innerHTML = "";
+    addMessage(WELCOME_MESSAGE);
+
+    try {
+      sessionStorage.removeItem("closetlyChatHistory");
+    } catch (error) {
+      console.error("Failed to clear saved chat history:", error);
+    }
   }
 
   // Exposed so you can wire a "New chat" / clear button to this later,
   // e.g. <button onclick="window.closetlyClearChat()">.
   window.closetlyClearChat = clearChatHistory;
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) clearChatHistory();
+  });
 
 
   /* -----------------------------------------
@@ -116,8 +93,7 @@ function initAssistant() {
 
   aiClose.addEventListener("click", closeAIChat);
 
-  // Repaint any messages from a previous page into the chat window.
-  restoreChatUI();
+  clearChatHistory();
 
 
   /* -----------------------------------------
@@ -302,7 +278,6 @@ function initAssistant() {
     // Keep the running conversation in sync for the next turn's context.
     chatHistory.push({ role: "user", content: userMessage });
     chatHistory.push({ role: "assistant", content: data.response });
-    saveChatHistory();
 
     return data;
   }
