@@ -245,8 +245,9 @@ body.stylist-body {
 }
 
 .conversation-item {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 30px;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -287,7 +288,8 @@ body.stylist-body {
 }
 
 .conversation-select:focus-visible,
-.conversation-delete:focus-visible {
+.conversation-menu-toggle:focus-visible,
+.conversation-menu-delete:focus-visible {
   outline: 3px solid rgba(148, 97, 62, .35);
   outline-offset: 1px;
 }
@@ -308,35 +310,74 @@ body.stylist-body {
   white-space: nowrap;
 }
 
-.conversation-delete {
-  display: flex;
-  width: auto;
+.conversation-menu-toggle {
+  display: grid;
+  width: 30px;
   height: 30px;
   flex: 0 0 auto;
   place-items: center;
-  align-items: center;
-  gap: 4px;
-  padding: 0 7px;
-  border: 1px solid #eadbd0;
-  border-radius: 7px;
-  background: #faf4ee;
-  color: #815c45;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #8b725e;
   cursor: pointer;
-  font-size: 10px;
-  font-weight: 600;
-  transition: background .18s ease, color .18s ease;
+  font-size: 16px;
+  transition: border-color .18s ease, background .18s ease, color .18s ease;
 }
 
-.conversation-delete:hover {
+.conversation-menu-toggle:hover,
+.conversation-menu-toggle[aria-expanded="true"] {
+  border-color: #eadbd0;
+  background: #fffaf6;
+  color: var(--stylist-brown-dark);
+}
+
+.conversation-menu-toggle:disabled {
+  cursor: wait;
+  opacity: .45;
+}
+
+.conversation-menu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% - 1px);
+  right: 2px;
+  min-width: 168px;
+  padding: 5px;
+  border: 1px solid #e9ded3;
+  border-radius: 9px;
+  background: #fffdfa;
+  box-shadow: 0 8px 22px rgba(49, 38, 26, .13);
+}
+
+.conversation-menu[hidden] {
+  display: none;
+}
+
+.conversation-menu-delete {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #815c45;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+}
+
+.conversation-menu-delete:hover {
   background: #f8e8df;
   color: #a3412d;
 }
 
-.conversation-delete span {
-  white-space: nowrap;
-}
-
-.conversation-delete:disabled {
+.conversation-menu-delete:disabled {
   cursor: wait;
   opacity: .45;
 }

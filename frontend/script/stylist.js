@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let isResponding = false;
   let conversationLoadId = 0;
   let typingRow = null;
+  let openConversationMenuId = null;
+  let deletingConversationId = null;
 
   function setNotice(message, isError = false) {
     notice.classList.toggle("is-error", isError);
@@ -73,6 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     renderConversations();
   }
 
+  function getConversationRow(id) {
+    return [...conversationList.querySelectorAll(".conversation-item")]
+      .find((row) => row.dataset.conversationId === id);
+  }
+
   function renderConversations() {
     conversationList.replaceChildren();
     conversations.forEach((conversation) => {
@@ -92,15 +99,53 @@ document.addEventListener("DOMContentLoaded", () => {
       selectButton.append(icon, title);
       selectButton.addEventListener("click", () => selectConversation(conversation._id));
 
+      const menuToggle = document.createElement("button");
+      menuToggle.type = "button";
+      menuToggle.className = "conversation-menu-toggle";
+      menuToggle.setAttribute("aria-label", `More options for ${title.textContent}`);
+      menuToggle.setAttribute("aria-haspopup", "menu");
+      menuToggle.setAttribute("aria-expanded", String(openConversationMenuId === conversation._id));
+      menuToggle.title = "Conversation options";
+      menuToggle.disabled = isResponding || deletingConversationId === conversation._id;
+      menuToggle.innerHTML = '<i class="bi bi-three-dots-vertical" aria-hidden="true"></i>';
+
+      const menu = document.createElement("div");
+      menu.className = "conversation-menu";
+      menu.setAttribute("role", "menu");
+      menu.setAttribute("aria-label", `Options for ${title.textContent}`);
+      menu.hidden = openConversationMenuId !== conversation._id;
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
-      deleteButton.className = "conversation-delete";
-      deleteButton.setAttribute("aria-label", `Delete ${title.textContent}`);
-      deleteButton.title = "Delete conversation";
-      deleteButton.disabled = isResponding;
-      deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i><span>Delete</span>';
-      deleteButton.addEventListener("click", () => deleteConversation(conversation._id));
-      row.append(selectButton, deleteButton);
+      deleteButton.className = "conversation-menu-delete";
+      deleteButton.setAttribute("role", "menuitem");
+      deleteButton.tabIndex = 0;
+      deleteButton.disabled = isResponding || deletingConversationId === conversation._id;
+      deleteButton.innerHTML = '<i class="bi bi-trash3" aria-hidden="true"></i><span>Delete conversation</span>';
+      menu.appendChild(deleteButton);
+
+      menuToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openConversationMenuId = openConversationMenuId === conversation._id
+          ? null
+          : conversation._id;
+        renderConversations();
+        if (openConversationMenuId) {
+          getConversationRow(conversation._id)?.querySelector(".conversation-menu-delete")?.focus();
+        }
+      });
+      deleteButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openConversationMenuId = null;
+        renderConversations();
+        deleteConversation(conversation._id);
+      });
+      menu.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Home" || event.key === "End") {
+          event.preventDefault();
+          deleteButton.focus();
+        }
+      });
+      row.append(selectButton, menuToggle, menu);
       conversationList.appendChild(row);
     });
 
@@ -112,13 +157,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const conversation = conversations.find((item) => item._id === id);
     if (!conversation) return;
     const title = conversation.title || "New conversation";
-    if (!window.confirm(`Delete "${title}" and all its messages? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete "${title}" and all its messages? This cannot be undone.`)) {
+      getConversationRow(id)?.querySelector(".conversation-menu-toggle")?.focus();
+      return;
+    }
 
-    const row = [...conversationList.querySelectorAll(".conversation-item")]
-      .find((item) => item.dataset.conversationId === id);
-    const deleteButton = row?.querySelector(".conversation-delete");
-
-    if (deleteButton) deleteButton.disabled = true;
+    deletingConversationId = id;
+    renderConversations();
     showChatError("");
     try {
       await Api.stylist.deleteConversation(id);
@@ -136,8 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
       renderConversations();
       closeSidebar();
     } catch (error) {
-      if (deleteButton) deleteButton.disabled = false;
       showChatError(`We couldn't delete this conversation. ${error.message}`);
+    } finally {
+      deletingConversationId = null;
+      renderConversations();
     }
   }
 
@@ -504,8 +551,22 @@ document.addEventListener("DOMContentLoaded", () => {
   openSidebarButton.addEventListener("click", openSidebar);
   closeSidebarButton.addEventListener("click", closeSidebar);
   sidebarBackdrop.addEventListener("click", closeSidebar);
+  document.addEventListener("click", () => {
+    if (openConversationMenuId) {
+      openConversationMenuId = null;
+      renderConversations();
+    }
+  });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeSidebar();
+    if (event.key === "Escape") {
+      if (openConversationMenuId) {
+        const menuId = openConversationMenuId;
+        openConversationMenuId = null;
+        renderConversations();
+        getConversationRow(menuId)?.querySelector(".conversation-menu-toggle")?.focus();
+      }
+      closeSidebar();
+    }
   });
 
   renderConversations();
