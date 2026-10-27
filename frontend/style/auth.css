@@ -13,7 +13,7 @@
   padding: 40px 20px;
   background:
     radial-gradient(circle at 20% 10%, rgba(154,96,55,.08), transparent 30%),
-    var(--cream);
+    transparent;
 }
 
 /* ---------- card ---------- */

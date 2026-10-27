@@ -11,7 +11,7 @@ body.stylist-body {
   min-width: 320px;
   min-height: 100vh;
   overflow: hidden;
-  background: var(--cream);
+  background-color: var(--cream);
   color: var(--stylist-ink);
 }
 
@@ -107,7 +107,7 @@ body.stylist-body {
   flex-direction: column;
   padding: 27px 18px 16px;
   border-right: 1px solid var(--stylist-border);
-  background: #f5f1eb;
+  background: rgba(245, 241, 235, .82);
 }
 
 .sidebar-heading {
@@ -462,7 +462,7 @@ body.stylist-body {
   flex-direction: column;
   background:
     radial-gradient(ellipse at 50% 0, rgba(233, 221, 204, .24), transparent 48%),
-    var(--stylist-cream);
+    rgba(251, 249, 246, .78);
 }
 
 .chat-topline {
