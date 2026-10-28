@@ -9,7 +9,7 @@ const openapi = {
   },
   servers: [
     {
-      url: `http://localhost:${config.port}`,
+      url: `https://closetly-io.vercel.app`,
       description: 'Local development',
     },
   ],
