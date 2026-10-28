@@ -11,8 +11,10 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
 
 const config = require('./config');
+const swaggerDocument = require('./config/swagger');
 const connectDB = require('./config/db');
 const { globalErrorHandler, notFound } = require('./middleware/errorHandler');
 const { sanitize } = require('./middleware/validation');
@@ -189,6 +191,16 @@ app.get('/health', (req, res) => {
     version: process.env.npm_package_version || '1.0.0',
   });
 });
+
+// ============================================================
+// API DOCUMENTATION
+// ============================================================
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get('/api-docs.json', (req, res) => {
+  res.json(swaggerDocument);
+});
+
 
 // ============================================================
 // API ROUTES

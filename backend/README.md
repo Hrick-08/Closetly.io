@@ -91,6 +91,16 @@ npm run dev
 
 Server runs on `http://localhost:5000`
 
+### Swagger API Documentation
+
+Interactive API documentation is available at:
+
+- `http://localhost:5000/api-docs`
+- OpenAPI JSON: `http://localhost:5000/api-docs.json`
+
+Use the **Authorize** button in Swagger UI to enter a JWT access token as
+`Bearer <token>` before testing protected endpoints.
+
 ## API Endpoints
 
 ### Authentication (`/api/auth`)
