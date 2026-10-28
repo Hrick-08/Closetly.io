@@ -1,3 +1,4 @@
+
 /**
  * Closetly Backend - Express.js Application Entry Point
  */
@@ -16,7 +17,12 @@ const swaggerUi = require('swagger-ui-express');
 const config = require('./config');
 const swaggerDocument = require('./config/swagger');
 const connectDB = require('./config/db');
-const { globalErrorHandler, notFound } = require('./middleware/errorHandler');
+
+const {
+  globalErrorHandler,
+  notFound,
+} = require('./middleware/errorHandler');
+
 const { sanitize } = require('./middleware/validation');
 
 // Import routes
@@ -53,10 +59,7 @@ app.use(
 // ============================================================
 
 const allowedOrigins = [
-  // Production frontend
   'https://closetly.hrick.in',
-
-  // Vercel backend itself
   'https://closetly-io.vercel.app',
 
   // Local development
@@ -64,6 +67,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5500',
   'http://localhost:8765',
+
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5500',
@@ -72,8 +76,7 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no Origin header.
-    // This includes server-to-server requests, curl, Postman, etc.
+    // Allow requests without an Origin header (curl, Postman, etc.)
     if (!origin) {
       return callback(null, true);
     }
@@ -109,7 +112,6 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
 
 // Explicitly handle preflight requests
@@ -196,22 +198,37 @@ app.get('/health', (req, res) => {
 // API DOCUMENTATION
 // ============================================================
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Remove the production CSP header for Swagger UI requests only.
+// Keep Helmet's security policy enabled for the rest of the app.
+app.use('/api-docs', (req, res, next) => {
+  res.removeHeader('Content-Security-Policy');
+  next();
+});
+
+// Serve the OpenAPI specification
 app.get('/api-docs.json', (req, res) => {
   res.json(swaggerDocument);
 });
 
+// Serve Swagger UI
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    explorer: true,
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  })
+);
 
 // ============================================================
 // API ROUTES
 // ============================================================
 
 app.use('/api/auth', authRoutes);
-
 app.use('/api/wardrobe', wardrobeRoutes);
-
 app.use('/api/microservice', microserviceRoutes);
-
 app.use('/api/stylist', stylistRoutes);
 
 // ============================================================
@@ -277,7 +294,6 @@ const shutdown = async (signal) => {
   server.close(async () => {
     console.log('HTTP server closed.');
 
-    // Close MongoDB connection
     const mongoose = require('mongoose');
 
     await mongoose.connection.close();
