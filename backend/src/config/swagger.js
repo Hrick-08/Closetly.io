@@ -10,6 +10,10 @@ const openapi = {
   servers: [
     {
       url: `https://closetly-io.vercel.app`,
+      description: 'Production server',
+    },
+    {
+      url: `http://localhost:${config.port}`,
       description: 'Local development',
     },
   ],
