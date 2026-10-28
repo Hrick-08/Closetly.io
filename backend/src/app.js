@@ -205,22 +205,45 @@ app.use('/api-docs', (req, res, next) => {
   next();
 });
 
-// Serve the OpenAPI specification
+
+/* Serve the OpenAPI specification */
 app.get('/api-docs.json', (req, res) => {
   res.json(swaggerDocument);
 });
 
-// Serve Swagger UI
-app.use(
-  '/api-docs',
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerDocument, {
-    explorer: true,
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  })
-);
+/* Serve Swagger UI using CDN assets */
+app.get(['/api-docs', '/api-docs/'], (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Closetly Backend API</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css"
+  />
+</head>
+<body>
+  <div id="swagger-ui"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = function () {
+      window.ui = SwaggerUIBundle({
+        url: "/api-docs.json",
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        persistAuthorization: true
+      });
+    };
+  </script>
+</body>
+</html>`);
+});
+
 
 // ============================================================
 // API ROUTES
