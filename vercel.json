@@ -13,13 +13,19 @@
   },
   "rewrites": [
     {
-      "source": "/api-docs.json",
+      "source": "/api-docs",
       "destination": {
         "service": "backend"
       }
     },
     {
-      "source": "/api-docs(.*)",
+      "source": "/api-docs/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/api-docs.json",
       "destination": {
         "service": "backend"
       }
