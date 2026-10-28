@@ -97,7 +97,7 @@ Interactive API documentation is available at:
 
 - `http://localhost:5000/api-docs`
 - OpenAPI JSON: `http://localhost:5000/api-docs.json`
-- Deployed : `https://closetly-io.vercel.app`
+- Deployed : `https://closetly-io.vercel.app/api-docs`
 
 Use the **Authorize** button in Swagger UI to enter a JWT access token as
 `Bearer <token>` before testing protected endpoints.
